@@ -1,0 +1,74 @@
+/**
+*   Game class acts as a controller for the whole Game
+*/
+
+class Game{
+    static Game instance;
+    field int score;
+    field boolean exit;
+    field Dinosaur dinosaur;
+    // field Cactus cactus;
+    field ObstacleHandler ob;
+
+    constructor Game new(){
+        do Screen.clearScreen();
+        do DinosaurController.newDinosaur(20,150);
+        let ob = ObstacleHandler.new(510, 184);
+        let score = 0;
+        let exit = false;
+        do Screen.drawRectangle(0, 238, 511, 240);
+        do Screen.drawLine(0, 200, 511, 200); 
+        return this;
+    }
+
+    method void run(){
+        var int i;
+        var int key;
+        do Commons.bottomDisplay();
+         while (~exit){
+            while((~exit) & (key = 0)){
+                let key = Keyboard.keyPressed();
+                do runAnimate();
+                do Output.moveCursor(22,6);
+                do Output.printInt(score);
+                let score = score + 1;
+            }
+            if (key = 69) { 
+                let exit = true;
+                do Commons.printEndCredits(score); 
+                do Output.moveCursor(22,10);
+             }
+            if ( (key = 131) &  (DinosaurController.islanded()) ) {  
+                do DinosaurController.jump(); 
+                }
+            let key = 0;
+         }
+         return;
+    }
+
+    method void runAnimate(){
+        if(Commons.getGameOver()){
+            let exit = true;
+            do Commons.printExitDetails(score);
+        }
+        do DinosaurController.animate();
+        do ob.animate();
+        return;
+    }
+
+    method void dispose(){
+        do DinosaurController.dispose();
+        do ob.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    function void newInstance() {
+        let instance = Game.new();
+        return;
+    }
+
+    function Game getInstance() {
+        return instance;
+    }
+}

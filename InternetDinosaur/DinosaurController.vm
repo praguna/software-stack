@@ -1,0 +1,115 @@
+function DinosaurController.newDinosaur 0
+push argument 0
+pop static 2
+push argument 1
+pop static 3
+push argument 0
+push argument 1
+call Dinosaur.new 2
+pop static 0
+push constant 1
+neg
+pop static 1
+push constant 0
+not
+pop static 4
+push constant 0
+return
+function DinosaurController.animate 3
+call Commons.getGameOver 0
+pop local 0
+push local 0
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+pop static 1
+label IF_FALSE0
+call DinosaurController.getCurrX 0
+pop local 1
+call DinosaurController.getCurrY 0
+pop local 2
+push local 2
+push static 3
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+not
+pop static 4
+push static 1
+push constant 1
+neg
+call Math.multiply 2
+pop static 1
+push static 0
+push static 1
+call Dinosaur.setLimp 2
+pop temp 0
+goto IF_END1
+label IF_FALSE1
+push static 0
+call Dinosaur.hide 1
+pop temp 0
+push static 0
+push static 2
+push local 2
+push constant 10
+add
+call Dinosaur.setCorr 3
+pop temp 0
+push static 0
+push constant 0
+call Dinosaur.setLimp 2
+pop temp 0
+label IF_END1
+push static 0
+call Dinosaur.show 1
+pop temp 0
+push constant 100
+call Sys.wait 1
+pop temp 0
+push constant 0
+return
+function DinosaurController.jump 1
+call Commons.getGameOver 0
+pop local 0
+push local 0
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+return
+label IF_FALSE0
+push static 0
+call Dinosaur.hide 1
+pop temp 0
+push static 0
+push static 2
+push static 3
+push constant 80
+sub
+call Dinosaur.setCorr 3
+pop temp 0
+push constant 0
+pop static 4
+push constant 0
+return
+function DinosaurController.dispose 0
+push static 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function DinosaurController.islanded 0
+push static 4
+return
+function DinosaurController.getCurrX 0
+push static 0
+call Dinosaur.getx 1
+return
+function DinosaurController.getCurrY 0
+push static 0
+call Dinosaur.gety 1
+return

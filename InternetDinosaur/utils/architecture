@@ -1,0 +1,8 @@
+
+Implementation steps :
+    * Follow mvc architecture
+    * Starting with developing model classes
+    * Then add a layer of controllers
+    * Extend the previous step if required
+    * Add a game wrapper
+    * Finally create the main game class

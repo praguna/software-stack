@@ -1,0 +1,71 @@
+/**
+Controls movements of Dinosaur on the screen
+*/
+class DinosaurController{
+    static Dinosaur dinosaur;
+    static int limp;
+    static int x,y;
+    static boolean islanded;
+
+    function void newDinosaur(int Ax, int Ay) {
+        let x = Ax;
+        let y = Ay;
+        let dinosaur = Dinosaur.new(Ax, Ay);
+        let limp = -1;
+        let islanded = true;
+        return;
+    }
+    
+    function void animate(){
+        var boolean gameover;
+        var int currX, currY;
+        let gameover = Commons.getGameOver();
+        if(gameover){
+            let limp = 0;
+        }
+        let currX = DinosaurController.getCurrX();
+        let currY = DinosaurController.getCurrY();
+        if( currY = y ){
+            let islanded = true;
+            let limp = limp * -1;
+            do dinosaur.setLimp(limp);
+        }else{
+            do dinosaur.hide();
+            do dinosaur.setCorr(x , currY + 10);
+            do dinosaur.setLimp(0);
+        }
+        do dinosaur.show();
+        do Sys.wait(100);
+        return;
+    }
+
+    function void jump(){
+        var boolean gameover;
+        let gameover = Commons.getGameOver();
+        if(gameover){
+            return;
+        }
+        do dinosaur.hide();
+        do dinosaur.setCorr(x , y-80);
+        let islanded = false;
+        return;
+    }
+
+    function void dispose(){
+        do Memory.deAlloc(dinosaur);
+        return;
+    }
+
+    function boolean islanded(){
+        return islanded;
+    }
+
+    function int getCurrX(){
+        return dinosaur.getx();
+    }
+
+    function int getCurrY(){
+        return dinosaur.gety();
+    }
+
+}

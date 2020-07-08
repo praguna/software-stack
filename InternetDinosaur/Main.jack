@@ -1,0 +1,13 @@
+/**
+    Main class invokes the game of InternetDinosaur
+*/
+class Main{
+    function void main(){
+        var Game internetDinosaur;
+        do Game.newInstance();
+        let internetDinosaur = Game.getInstance();
+        do internetDinosaur.run();
+        do internetDinosaur.dispose();
+        return;
+    }
+}
