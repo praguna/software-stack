@@ -1,0 +1,102 @@
+/**
+    Bullet obstacle class that should be ducked
+*/
+class Bullet{
+
+    field int x,y;
+    field int location;
+    field boolean isActive;
+
+    method void draw(){
+        var int memAddress;
+        let location = Commons.getLocation(x,y);
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -128);
+        do Memory.poke(memAddress+32, 8128);
+        do Memory.poke(memAddress+64, -32);
+        do Memory.poke(memAddress+96, 496);
+        do Memory.poke(memAddress+128, 504);
+        do Memory.poke(memAddress+160, 508);
+        do Memory.poke(memAddress+192, 510);
+        do Memory.poke(memAddress+224, 511);
+        do Memory.poke(memAddress+256, 510);
+        do Memory.poke(memAddress+288, 508);
+        do Memory.poke(memAddress+320, 504);
+        do Memory.poke(memAddress+352, 496);
+        do Memory.poke(memAddress+384, 480);
+        do Memory.poke(memAddress+416, -64);
+        do Memory.poke(memAddress+448, 8064);
+        do Memory.poke(memAddress+480, -256);
+        return;
+    }
+
+    method void undraw(){
+        var int memAddress;
+        let location = Commons.getLocation(x,y);
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0,0);
+        do Memory.poke(memAddress+32,0);
+        do Memory.poke(memAddress+64,0);
+        do Memory.poke(memAddress+96,0);
+        do Memory.poke(memAddress+128,0);
+        do Memory.poke(memAddress+160,0);
+        do Memory.poke(memAddress+192,0);
+        do Memory.poke(memAddress+224,0);
+        do Memory.poke(memAddress+256,0);
+        do Memory.poke(memAddress+288,0);
+        do Memory.poke(memAddress+320,0);
+        do Memory.poke(memAddress+352,0);
+        do Memory.poke(memAddress+384,0);
+        do Memory.poke(memAddress+416,0);
+        do Memory.poke(memAddress+448,0);
+        do Memory.poke(memAddress+480,0);
+        return;
+    }
+
+    method void show(){
+        do draw();
+        return;
+    }
+
+    method void hide(){
+        do undraw();
+        return;
+    }
+
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+
+
+     method void moveLeft(){
+        if( ~isActive ){
+            return;
+        }
+        if( (x < 2) | (hasCollided()) ){
+            do hide();
+            let isActive = false;
+            return;
+        }
+        do hide();
+        let x = x - 10;
+        do show();
+        return;
+    }
+    
+    // Collision logic
+    method boolean hasCollided(){
+        var int currX, currY;
+        let currX = DinosaurController.getCurrX();
+        let currY = DinosaurController.getCurrY();
+        if( (x < 50) & (x + 5 > currX) ){
+            if(currY < (y + 16) ){ // because 3 times size scaling
+                if( currY + 48 > y){
+                    do Commons.setGameOver(true);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}

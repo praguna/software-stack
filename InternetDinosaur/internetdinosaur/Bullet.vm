@@ -1,0 +1,333 @@
+function Bullet.draw 1
+push argument 0
+pop pointer 0
+push this 0
+push this 1
+call Commons.getLocation 2
+pop this 2
+push constant 16384
+push this 2
+add
+pop local 0
+push local 0
+push constant 0
+add
+push constant 128
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 32
+add
+push constant 8128
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 64
+add
+push constant 32
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 96
+add
+push constant 496
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 128
+add
+push constant 504
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 160
+add
+push constant 508
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 192
+add
+push constant 510
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 224
+add
+push constant 511
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 256
+add
+push constant 510
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 288
+add
+push constant 508
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 320
+add
+push constant 504
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 352
+add
+push constant 496
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 384
+add
+push constant 480
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 416
+add
+push constant 64
+neg
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 448
+add
+push constant 8064
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 480
+add
+push constant 256
+neg
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
+function Bullet.undraw 1
+push argument 0
+pop pointer 0
+push this 0
+push this 1
+call Commons.getLocation 2
+pop this 2
+push constant 16384
+push this 2
+add
+pop local 0
+push local 0
+push constant 0
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 32
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 64
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 96
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 128
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 160
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 192
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 224
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 256
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 288
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 320
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 352
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 384
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 416
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 448
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push local 0
+push constant 480
+add
+push constant 0
+call Memory.poke 2
+pop temp 0
+push constant 0
+return
+function Bullet.show 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Bullet.draw 1
+pop temp 0
+push constant 0
+return
+function Bullet.hide 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Bullet.undraw 1
+pop temp 0
+push constant 0
+return
+function Bullet.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Bullet.moveLeft 0
+push argument 0
+pop pointer 0
+push this 3
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+return
+label IF_FALSE0
+push this 0
+push constant 2
+lt
+push pointer 0
+call Bullet.hasCollided 1
+or
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push pointer 0
+call Bullet.hide 1
+pop temp 0
+push constant 0
+pop this 3
+push constant 0
+return
+label IF_FALSE1
+push pointer 0
+call Bullet.hide 1
+pop temp 0
+push this 0
+push constant 10
+sub
+pop this 0
+push pointer 0
+call Bullet.show 1
+pop temp 0
+push constant 0
+return
+function Bullet.hasCollided 2
+push argument 0
+pop pointer 0
+call DinosaurController.getCurrX 0
+pop local 0
+call DinosaurController.getCurrY 0
+pop local 1
+push this 0
+push constant 50
+lt
+push this 0
+push constant 5
+add
+push local 0
+gt
+and
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 1
+push this 1
+push constant 16
+add
+lt
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 1
+push constant 48
+add
+push this 1
+gt
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 0
+not
+call Commons.setGameOver 1
+pop temp 0
+push constant 0
+not
+return
+label IF_FALSE2
+label IF_FALSE1
+label IF_FALSE0
+push constant 0
+return

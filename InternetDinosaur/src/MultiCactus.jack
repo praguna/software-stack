@@ -1,0 +1,197 @@
+/**
+ * Multi-catctus obstacle
+ */
+
+class MultiCactus{
+
+    field int x,y;
+    field int location;
+    field boolean isActive;
+
+     method void show(){
+        do draw();
+        return;
+    }
+
+    method void hide(){
+        do undraw();
+        return;
+    }
+
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+
+     method void draw(){
+        var int memAddress;
+        let location = Commons.getLocation(x,y);
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0, -16336);
+        do Memory.poke(memAddress+1, 3075);
+        do Memory.poke(memAddress+32, -16336);
+        do Memory.poke(memAddress+33, 3075);
+        do Memory.poke(memAddress+64, -16336);
+        do Memory.poke(memAddress+65, 3075);
+        do Memory.poke(memAddress+96, -16336);
+        do Memory.poke(memAddress+97, 3075);
+        do Memory.poke(memAddress+128, -16192);
+        do Memory.poke(memAddress+129, 771);
+        do Memory.poke(memAddress+160, -16192);
+        do Memory.poke(memAddress+161, 771);
+        do Memory.poke(memAddress+192, -15616);
+        do Memory.poke(memAddress+193, 195);
+        do Memory.poke(memAddress+224, -15616);
+        do Memory.poke(memAddress+225, 195);
+        do Memory.poke(memAddress+256, -1024);
+        do Memory.poke(memAddress+257, 63);
+        do Memory.poke(memAddress+288, -1024);
+        do Memory.poke(memAddress+289, 63);
+        do Memory.poke(memAddress+320, -16384);
+        do Memory.poke(memAddress+321, 3);
+        do Memory.poke(memAddress+352, -16384);
+        do Memory.poke(memAddress+353, 3);
+        do Memory.poke(memAddress+384, -16384);
+        do Memory.poke(memAddress+385, 3);
+        do Memory.poke(memAddress+416, -16384);
+        do Memory.poke(memAddress+417, 3);
+        do Memory.poke(memAddress+448, -16384);
+        do Memory.poke(memAddress+449, 3);
+        do Memory.poke(memAddress+480, -16384);
+        do Memory.poke(memAddress+481, 3);
+        do Memory.poke(memAddress+512, -16384);
+        do Memory.poke(memAddress+513, 3);
+        do Memory.poke(memAddress+544, -16384);
+        do Memory.poke(memAddress+545, 3);
+        do Memory.poke(memAddress+576, -15565);
+        do Memory.poke(memAddress+577, -13117);
+        do Memory.poke(memAddress+608, -15565);
+        do Memory.poke(memAddress+609, -13117);
+        do Memory.poke(memAddress+640, -15565);
+        do Memory.poke(memAddress+641, -13117);
+        do Memory.poke(memAddress+672, -15565);
+        do Memory.poke(memAddress+673, -13117);
+        do Memory.poke(memAddress+704, -16132);
+        do Memory.poke(memAddress+705, 16131);
+        do Memory.poke(memAddress+736, -16132);
+        do Memory.poke(memAddress+737, 16131);
+        do Memory.poke(memAddress+768, -16336);
+        do Memory.poke(memAddress+769, 3075);
+        do Memory.poke(memAddress+800, -16336);
+        do Memory.poke(memAddress+801, 3075);
+        do Memory.poke(memAddress+832, -16336);
+        do Memory.poke(memAddress+833, 3075);
+        do Memory.poke(memAddress+864, -16336);
+        do Memory.poke(memAddress+865, 3075);
+        do Memory.poke(memAddress+896, -16336);
+        do Memory.poke(memAddress+897, 3075);
+        do Memory.poke(memAddress+928, -16336);
+        do Memory.poke(memAddress+929, 3075);
+        do Memory.poke(memAddress+960, -16336);
+        do Memory.poke(memAddress+961, 3075);
+        do Memory.poke(memAddress+992, -16336);
+        do Memory.poke(memAddress+993, 3075);
+        return;
+
+
+    }
+
+    method void undraw(){
+        var int memAddress;
+        let location = Commons.getLocation(x,y);
+        let memAddress = 16384+location;
+        do Memory.poke(memAddress+0,0);
+        do Memory.poke(memAddress+1,0);
+        do Memory.poke(memAddress+32,0);
+        do Memory.poke(memAddress+33,0);
+        do Memory.poke(memAddress+64,0);
+        do Memory.poke(memAddress+65,0);
+        do Memory.poke(memAddress+96,0);
+        do Memory.poke(memAddress+97,0);
+        do Memory.poke(memAddress+128,0);
+        do Memory.poke(memAddress+129,0);
+        do Memory.poke(memAddress+160,0);
+        do Memory.poke(memAddress+161,0);
+        do Memory.poke(memAddress+192,0);
+        do Memory.poke(memAddress+193,0);
+        do Memory.poke(memAddress+224,0);
+        do Memory.poke(memAddress+225,0);
+        do Memory.poke(memAddress+256,0);
+        do Memory.poke(memAddress+257,0);
+        do Memory.poke(memAddress+288,0);
+        do Memory.poke(memAddress+289,0);
+        do Memory.poke(memAddress+320,0);
+        do Memory.poke(memAddress+321,0);
+        do Memory.poke(memAddress+352,0);
+        do Memory.poke(memAddress+353,0);
+        do Memory.poke(memAddress+384,0);
+        do Memory.poke(memAddress+385,0);
+        do Memory.poke(memAddress+416,0);
+        do Memory.poke(memAddress+417,0);
+        do Memory.poke(memAddress+448,0);
+        do Memory.poke(memAddress+449,0);
+        do Memory.poke(memAddress+480,0);
+        do Memory.poke(memAddress+481,0);
+        do Memory.poke(memAddress+512,0);
+        do Memory.poke(memAddress+513,0);
+        do Memory.poke(memAddress+544,0);
+        do Memory.poke(memAddress+545,0);
+        do Memory.poke(memAddress+576,0);
+        do Memory.poke(memAddress+577,0);
+        do Memory.poke(memAddress+608,0);
+        do Memory.poke(memAddress+609,0);
+        do Memory.poke(memAddress+640,0);
+        do Memory.poke(memAddress+641,0);
+        do Memory.poke(memAddress+672,0);
+        do Memory.poke(memAddress+673,0);
+        do Memory.poke(memAddress+704,0);
+        do Memory.poke(memAddress+705,0);
+        do Memory.poke(memAddress+736,0);
+        do Memory.poke(memAddress+737,0);
+        do Memory.poke(memAddress+768,0);
+        do Memory.poke(memAddress+769,0);
+        do Memory.poke(memAddress+800,0);
+        do Memory.poke(memAddress+801,0);
+        do Memory.poke(memAddress+832,0);
+        do Memory.poke(memAddress+833,0);
+        do Memory.poke(memAddress+864,0);
+        do Memory.poke(memAddress+865,0);
+        do Memory.poke(memAddress+896,0);
+        do Memory.poke(memAddress+897,0);
+        do Memory.poke(memAddress+928,0);
+        do Memory.poke(memAddress+929,0);
+        do Memory.poke(memAddress+960,0);
+        do Memory.poke(memAddress+961,0);
+        do Memory.poke(memAddress+992,0);
+        do Memory.poke(memAddress+993,0);
+        return;
+    }
+
+    method void moveLeft(){
+        if( ~isActive ){
+            return;
+        }
+        if( (x < 5) | (hasCollided()) ){
+            do hide();
+            let isActive = false;
+            return;
+        }
+        do hide();
+        let x = x - 10;
+        do show();
+        return;
+    }
+    // Collision logic
+    method boolean hasCollided(){
+        var int currX, currY;
+        let currX = DinosaurController.getCurrX();
+        let currY = DinosaurController.getCurrY();
+        if( (x < 50) & (x + 5 > currX) ){
+            if(currY + 48 > y){ // because 3 times size scaling
+                do Commons.setGameOver(true);
+                return true;
+            }
+        }
+        return false;
+    }
+}

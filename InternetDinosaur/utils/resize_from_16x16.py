@@ -1,3 +1,7 @@
+"""
+    Utility class that helps in scaling sprites
+"""
+
 binary_strings = []
 decimal_val= []
 p = 0
@@ -59,8 +63,5 @@ def generate_new_function_body(hor, ver):
     return res
 
 if __name__ == "__main__":
-    # hor = int(input("Enter horizantal factor : "))
-    # ver = int(input("Enter vertical factor : "))
-    # name = input("Enter the file_name of 16x16 string : ")
-    preprocess_file("dinosaur_right")  # give me the file of the sprite
-    print(generate_new_function_body(2, 3))
+    preprocess_file("dinosaur")  # give me the file of the sprite
+    print(generate_new_function_body(1, 2)) # horizantal , vertical expansion

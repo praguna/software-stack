@@ -1,0 +1,17 @@
+/*
+    Psuedo Super class for all kinds of obstacles, Note that this template of field is common to Bullet, 
+    Cactus, MultiCactus classes
+*/
+
+class Obstacle{
+
+    field int x,y;
+    field int location;
+    field boolean isActive;
+    field int t;
+
+    constructor Obstacle new(){
+        let isActive = false;
+        return this;
+    }
+}

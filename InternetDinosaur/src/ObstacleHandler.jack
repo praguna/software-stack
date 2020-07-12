@@ -1,0 +1,95 @@
+
+/**
+    This is a controller class for handling obstacles 
+*/
+class ObstacleHandler{
+    field Array A;
+    field int next;
+    field int wait;
+    field Cactus cactus;
+    field MultiCactus multicactus;
+    field Bullet bullet;
+
+/**
+    Below an Array af 25 spaces of super class Obstacle objects is allocated which shall be used in the game
+*/
+    constructor ObstacleHandler new(){
+        var int i;
+        let A = Array.new(25);
+        while(i < 25){
+            let A[i] = Obstacle.new();  // pseudo super class
+            let i = i + 1; 
+        }
+        return this;
+    }
+
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+/**
+    Function allows creation of new obstacles depending on random number argument
+*/
+    method void respwan(int t){
+        var Array c;
+        let c = A[next];
+        let c[2] = 0;
+        let c[3] = -1;
+        let c[4] = t;
+        if((t=0)){
+            let c[0] = 510;
+            let c[1] = 184;
+            let cactus = c;
+            do cactus.show();
+        }
+        if((t=1)){
+            let c[0] = 490;
+            let c[1] = 165;
+            let multicactus = c;
+            do multicactus.show();
+        }
+        if( (t=2) ){
+            let c[0] = 510;
+            let c[1] = 140;
+            let bullet = c;
+            do bullet.show();
+        }
+        return;
+    }
+/**
+    This is a function updating the state of game object at each time step
+*/
+    method void animate(){
+        var int i,j,k;
+        var Array c;
+        while(i < 25){
+            let c = A[i];
+            if ( (c[3] = -1) ){
+                let j = j + 1;
+                if( (c[4] = 0) ){
+                    let cactus = c;
+                    do cactus.moveLeft();
+                }
+                if( (c[4] = 1) ){
+                   let multicactus = c;
+                   do multicactus.moveLeft();
+                }
+                if( (c[4] = 2) ){
+                    let bullet = c;
+                    do bullet.moveLeft();
+                }
+            }else{
+                let next = i;
+            }
+            let i = i+1;
+        }
+        if ( wait > 0 ){
+            let wait = wait - 1;
+        }else{
+            let wait = Commons.randomTimeStepWait(20,4); // deciding how long to wait
+            let k = Commons.randomObstacle(3,0); // deciding which object to respawn
+            do respwan(k);
+        }
+        return;   
+    }
+}

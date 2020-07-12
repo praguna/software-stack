@@ -5,14 +5,7 @@ class Cactus{
 
     field int x,y;
     field int location;
-    field boolean destroy;
-
-    constructor Cactus new(int Ax, int Ay){
-        let x = Ax;
-        let y = Ay;
-        let destroy = false;
-        return this;
-    }
+    field boolean isActive;
 
     method void show(){
         do draw();
@@ -74,13 +67,12 @@ class Cactus{
     }
 
     method void moveLeft(){
-        if( destroy ){
-            do dispose();
+        if( ~isActive ){
             return;
         }
         if( (x < 2) | (hasCollided()) ){
             do hide();
-            let destroy = true;
+            let isActive = false;
             return;
         }
         do hide();
@@ -88,7 +80,7 @@ class Cactus{
         do show();
         return;
     }
-
+    // Collision logic
     method boolean hasCollided(){
         var int currX, currY;
         let currX = DinosaurController.getCurrX();

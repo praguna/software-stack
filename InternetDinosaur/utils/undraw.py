@@ -1,3 +1,7 @@
+"""
+    Utility class to undraw an object
+"""
+
 def preprocess_file(file):
     res = ""
     with open(file) as f:

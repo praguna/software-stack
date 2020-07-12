@@ -1,0 +1,234 @@
+function Game.new 0
+push constant 4
+call Memory.alloc 1
+pop pointer 0
+call Screen.clearScreen 0
+pop temp 0
+call Commons.printEntryDetails 0
+pop temp 0
+push pointer 0
+return
+function Game.init 0
+push argument 0
+pop pointer 0
+call Screen.clearScreen 0
+pop temp 0
+call Commons.init 0
+pop temp 0
+push constant 20
+push constant 150
+push constant 20
+push constant 166
+call DinosaurController.newDinosaur 4
+pop temp 0
+call ObstacleHandler.new 0
+pop this 3
+push constant 0
+pop this 0
+push constant 0
+push constant 238
+push constant 511
+push constant 240
+call Screen.drawRectangle 4
+pop temp 0
+push constant 0
+push constant 200
+push constant 511
+push constant 200
+call Screen.drawLine 4
+pop temp 0
+call Commons.bottomDisplay 0
+pop temp 0
+push constant 0
+return
+function Game.run 1
+push argument 0
+pop pointer 0
+label WHILE_EXP0
+push local 0
+push constant 83
+eq
+not
+not
+if-goto WHILE_END0
+call Keyboard.keyPressed 0
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push pointer 0
+call Game.init 1
+pop temp 0
+label WHILE_EXP1
+push this 0
+not
+not
+if-goto WHILE_END1
+label WHILE_EXP2
+push this 0
+not
+push local 0
+push constant 0
+eq
+and
+push this 1
+not
+and
+not
+if-goto WHILE_END2
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+call Game.runAnimate 1
+pop temp 0
+call Commons.printScore 0
+pop temp 0
+goto WHILE_EXP2
+label WHILE_END2
+push local 0
+push constant 69
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+not
+pop this 0
+call Commons.getScore 0
+call Commons.printEndCredits 1
+pop temp 0
+push constant 22
+push constant 10
+call Output.moveCursor 2
+pop temp 0
+label IF_FALSE0
+push this 1
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+pop this 1
+label WHILE_EXP3
+push local 0
+push constant 82
+eq
+not
+not
+if-goto WHILE_END3
+call Keyboard.keyPressed 0
+pop local 0
+goto WHILE_EXP3
+label WHILE_END3
+push constant 0
+call Commons.setGameOver 1
+pop temp 0
+push pointer 0
+call Game.dellocate 1
+pop temp 0
+push pointer 0
+call Game.init 1
+pop temp 0
+label IF_FALSE1
+push local 0
+push constant 131
+eq
+call DinosaurController.islanded 0
+and
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+call DinosaurController.jump 0
+pop temp 0
+label IF_FALSE2
+push local 0
+push constant 133
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 0
+not
+call DinosaurController.shrink 1
+pop temp 0
+label IF_FALSE3
+label WHILE_EXP4
+push local 0
+push constant 133
+eq
+not
+if-goto WHILE_END4
+call Keyboard.keyPressed 0
+pop local 0
+push local 0
+push constant 133
+eq
+not
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 0
+call DinosaurController.shrink 1
+pop temp 0
+label IF_FALSE4
+push pointer 0
+call Game.runAnimate 1
+pop temp 0
+call Commons.printScore 0
+pop temp 0
+goto WHILE_EXP4
+label WHILE_END4
+push constant 0
+pop local 0
+goto WHILE_EXP1
+label WHILE_END1
+push constant 0
+return
+function Game.runAnimate 0
+push argument 0
+pop pointer 0
+call Commons.getGameOver 0
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+not
+pop this 1
+call Commons.getScore 0
+call Commons.printExitDetails 1
+pop temp 0
+label IF_FALSE0
+call DinosaurController.animate 0
+pop temp 0
+push this 3
+call ObstacleHandler.animate 1
+pop temp 0
+push constant 0
+return
+function Game.dellocate 0
+push argument 0
+pop pointer 0
+call DinosaurController.dispose 0
+pop temp 0
+push this 3
+call ObstacleHandler.dispose 1
+pop temp 0
+push constant 0
+return
+function Game.dispose 0
+push argument 0
+pop pointer 0
+push pointer 0
+call Game.dellocate 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Game.newInstance 0
+call Game.new 0
+pop static 0
+push constant 0
+return
+function Game.getInstance 0
+push static 0
+return

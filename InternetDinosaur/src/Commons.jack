@@ -1,0 +1,179 @@
+/**
+    utility class providing useful functions and variables
+*/
+class Commons{
+/**
+    Common state Variables used by the Application 
+*/
+ static boolean gameOver;
+ static int highScore;
+ static int randNext;
+ static int waitNext;
+ static int magicNumber;
+ static int bias;
+ static int score;
+ static int a,c;
+
+
+/**
+    Initialize constants required for random number generation
+*/
+ function void init(){
+     let randNext = 3;
+     let waitNext = 1;
+     let magicNumber = 181;
+     let score = 0;
+     let a = 181;
+     let c = 131;
+     return;
+ }
+
+
+ function int getScore(){
+     return score;
+ }
+
+ function void incrementScore(){
+     let score  =  score + 1; 
+     return;
+ }
+
+ function int getLocation(int x,int y){
+        return (y * 32) + (x/16);
+    }
+
+ function void setGameOver(boolean v){
+        let gameOver = v;
+        return;
+    }
+
+  function boolean getGameOver(){
+      return gameOver;
+  }
+
+  function int getHighScore(){
+     return highScore;
+  }
+
+  function void setHighScore(int x){
+     if( x  > highScore){
+        let highScore = x;
+     }
+     return;
+  }
+/**
+    Below is the list of display functions
+*/
+  function void printExitDetails(int score){
+        do Commons.setHighScore(score); 
+        do Output.moveCursor(3,20);
+        do Output.printString("##########################");
+        do Output.moveCursor(5,29);
+        do Output.printString("Game Over");
+        do Output.moveCursor(7, 29);
+        do Output.printString("Score:");
+        do Output.printInt(score);
+        do Output.moveCursor(9, 29);
+        do Output.printString("High Score:");
+        do Output.printInt(Commons.getHighScore());
+        do Output.moveCursor(11,25);
+        do Output.printString("Press ");
+        do Output.printChar(String.doubleQuote());
+        do Output.printString("R");
+        do Output.printChar(String.doubleQuote());
+        do Output.printString(" to Restart");
+        do Output.moveCursor(13,20);
+        do Output.printString("##########################");
+        return;
+    }
+
+    function void printEntryDetails(){
+        do Commons.setHighScore(score);
+        do Output.moveCursor(1,10);
+        do Output.printString("#############################################");
+        do Output.moveCursor(3,12);
+        do Output.printString("** Hello Welome To The Internet Dinosaur **");
+        do Output.moveCursor(5,19);
+        do Output.printString("-- Press S to start --");
+        do Output.moveCursor(7, 19);
+        do Output.printString("-- Instructions: --");
+        do Output.moveCursor(9,14);
+        do Output.printString("Use UP key to jump and DOWN key to duck ");
+        do Output.moveCursor(11, 19);
+        do Output.printString("** Have a nice day! **");
+        do Output.moveCursor(13, 19);
+        do Output.printString("Creator :  Praguna Manvi");
+        do Output.moveCursor(15,10);
+        do Output.printString("#############################################");
+        return;
+    }
+
+    function void bottomDisplay(){
+        let randNext = 3151;
+        do Output.moveCursor(22,0);
+	    do Output.printString("Score:");
+        do Output.moveCursor(22,17);
+	    do Output.printString("Press ");
+        do Output.printChar(String.doubleQuote());
+        do Output.printString("E");
+        do Output.printChar(String.doubleQuote());
+        do Output.printString(" To End Game ");
+        do Output.moveCursor(22,45);
+        do Output.printString("High Score:");
+        do Output.moveCursor(22,56);
+        do Output.printInt(Commons.getHighScore());
+      return;
+    }
+
+    function void printEndCredits(int score){
+        do Commons.setHighScore(score);
+        do Output.moveCursor(1,10);
+        do Output.printString("#######################################");
+        do Output.moveCursor(3,15);
+        do Output.printString("High Score is ");
+        do Output.printInt(Commons.getHighScore());
+        do Output.moveCursor(5,15);
+        do Output.printString("Thank You For Playing !!");
+        do Output.moveCursor(7, 15);
+        do Output.printString("Creator :  Praguna Manvi");
+        do Output.moveCursor(9, 15);
+        do Output.printString("Feel Free to Extend this Project!!");
+        do Output.moveCursor(11,10);
+        do Output.printString("########################################");
+        return;
+    }    
+/**
+    Below are the functions using linear congruence random number generation
+*/
+    function int randomTimeStepWait(int range, int bias){
+        let waitNext = Commons.linearCongruence(waitNext, range) + bias;
+        return waitNext;
+    }
+
+    function int randomObstacle(int range, int bias){
+        let randNext = Commons.linearCongruence(randNext, range) + bias;
+        return randNext;
+    }
+
+    function int linearCongruence(int v, int m){
+        return Commons.mod((v * a) + c, m);
+    }
+
+    function int sumSquare(int v,int range){
+        return Commons.mod(Commons.mod(v * v , magicNumber), range);
+    }
+
+    function int mod(int x, int y){
+        let x = Math.abs(x);
+        let x = x - ((x/y)*y);
+        return x;
+    }
+
+    function void printScore(){
+        do Output.moveCursor(22,6);
+        do Output.printInt(Commons.getScore());
+        do Commons.incrementScore();
+        return;
+    }
+    
+}

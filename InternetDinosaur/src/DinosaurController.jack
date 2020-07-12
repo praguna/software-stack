@@ -1,21 +1,25 @@
 /**
-Controls movements of Dinosaur on the screen
+    Controls movements of Dinosaur on the screen
 */
 class DinosaurController{
     static Dinosaur dinosaur;
     static int limp;
-    static int x,y;
+    static int x,y,s_x,s_y;
     static boolean islanded;
 
-    function void newDinosaur(int Ax, int Ay) {
+    function void newDinosaur(int Ax, int Ay, int Sx, int Sy) {
         let x = Ax;
         let y = Ay;
+        let s_x = Sx;
+        let s_y = Sy;
         let dinosaur = Dinosaur.new(Ax, Ay);
         let limp = -1;
         let islanded = true;
         return;
     }
-    
+    /**
+        Update Dinosaur object state
+    */
     function void animate(){
         var boolean gameover;
         var int currX, currY;
@@ -25,7 +29,7 @@ class DinosaurController{
         }
         let currX = DinosaurController.getCurrX();
         let currY = DinosaurController.getCurrY();
-        if( currY = y ){
+        if( ( islanded ) | (currY = y ) | (dinosaur.getShrink())){
             let islanded = true;
             let limp = limp * -1;
             do dinosaur.setLimp(limp);
@@ -48,6 +52,22 @@ class DinosaurController{
         do dinosaur.hide();
         do dinosaur.setCorr(x , y-80);
         let islanded = false;
+        return;
+    }
+
+    function void shrink(boolean val){
+        var boolean gameover;
+        let gameover = Commons.getGameOver();
+        if(gameover){
+            return;
+        }
+        do dinosaur.hide();
+        if( val ){
+            do dinosaur.setCorr(s_x,s_y);
+        }else{
+            do dinosaur.setCorr(x,y);
+        }
+        do dinosaur.setShrink(val);
         return;
     }
 

@@ -1,0 +1,8 @@
+function Obstacle.new 0
+push constant 5
+call Memory.alloc 1
+pop pointer 0
+push constant 0
+pop this 3
+push pointer 0
+return
