@@ -1,15 +1,14 @@
-import java.io.InputStreamReader;
-import java.io.Writer;
+import java.io.*;
 
 /*
     Handles Jack Grammar
  */
-public class CompilationEngine {
+class CompilationEngine {
     private JackTokenizer jackTokenizer;
-    private Writer writer;
-    CompilationEngine(InputStreamReader inputStreamReader, Writer writer){
-        this.writer = writer;
-        this.jackTokenizer = new JackTokenizer(inputStreamReader);
+    private PrintWriter writer;
+    CompilationEngine(FileInputStream inputStream, Writer writer){
+        this.writer = (PrintWriter) writer;
+        this.jackTokenizer = new JackTokenizer(inputStream);
 
     }
 
@@ -19,10 +18,15 @@ public class CompilationEngine {
     }
 
     // creates a file of the output of Tokenization
-    void compileOnlyTokens(){
+    void compileOnlyTokens() throws IOException {
+        System.out.println("<tokens>");
         while(jackTokenizer.hasMoreTokens()){
-
             jackTokenizer.advance();
         }
+        System.out.println("<\\tokens>");
+    }
+
+    String getCurrToken(){
+        return "";
     }
 }

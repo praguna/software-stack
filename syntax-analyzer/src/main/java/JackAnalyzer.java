@@ -18,9 +18,10 @@ public class JackAnalyzer {
         String inputPath = args[0];
         File file = new File(inputPath);
         if (file.isFile()){
-            InputStreamReader reader = new InputStreamReader(new FileInputStream(inputPath));
+//            InputStreamReader reader = new InputStreamReader(new FileInputStream(inputPath));
+            FileInputStream fileInputStream = new FileInputStream(inputPath);
             PrintWriter writer = new PrintWriter(getOutputPath(inputPath));
-            new CompilationEngine(reader, writer).compileOnlyTokens();
+            new CompilationEngine(fileInputStream, writer).compileOnlyTokens();
         }else{
             System.out.println("Second phase of implementation .");
         }
