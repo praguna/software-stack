@@ -1,4 +1,10 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
     Main Class
@@ -7,8 +13,17 @@ import java.io.*;
 */
 public class JackAnalyzer {
     private static String getOutputPath(String inputPath){
-        int e = inputPath.indexOf(".jack")+1, s = 0;
-        return inputPath.substring(0, e).concat(".xml");
+        int e = inputPath.indexOf(".jack"), s = 0;
+        return inputPath.substring(0, e).concat("Out").concat(".xml");
+    }
+
+    private static void generateFileCode(String inputPath) throws Exception {
+        FileInputStream fileInputStream = new FileInputStream(inputPath);
+        String of = getOutputPath(inputPath);
+        PrintWriter writer = new PrintWriter(of);
+        CompilationEngine compilationEngine = new CompilationEngine(fileInputStream, writer);
+        compilationEngine.compileOnlyTokens();
+        compilationEngine.close(of);
     }
 
     public static void main(String[] args) throws Exception {
@@ -18,12 +33,13 @@ public class JackAnalyzer {
         String inputPath = args[0];
         File file = new File(inputPath);
         if (file.isFile()){
-//            InputStreamReader reader = new InputStreamReader(new FileInputStream(inputPath));
-            FileInputStream fileInputStream = new FileInputStream(inputPath);
-            PrintWriter writer = new PrintWriter(getOutputPath(inputPath));
-            new CompilationEngine(fileInputStream, writer).compileOnlyTokens();
-        }else{
-            System.out.println("Second phase of implementation .");
+            generateFileCode(inputPath);
+        }else if(file.isDirectory()){
+            Stream<Path> walk =  Files.walk(Paths.get(inputPath));
+            List<String> files = walk.map(Path::toString).filter(x->x.endsWith("jack")).collect(Collectors.toList());
+            for(String filePath : files){
+                JackAnalyzer.generateFileCode(filePath);
+            }
+         }
         }
     }
-}

@@ -19,17 +19,93 @@ class JackTokenizer {
     }
 
     // Advance logic to increment stream reader and also to initialize tokens
-    void advance() throws IOException {
+    void advance() throws Exception {
+        int x;
+        String v;
+        setCurrToken(null,null);
+        if(ptr==0){
+            getNextChar();
+        }
         // remove preceding spaces and comment
         skipWhiteSpace();
         if(isComment()){
             removeComment();
+            return;
         }
-        if(isSymbol()){
-
+        else if(isSymbol()){
+            currTokenValue = String.valueOf(getCurrChar());
+            currTokenType = Token.SYMBOL;
+            getNextChar();
+            return;
         }
+        else if((x=isIntegerConst())!=-1){
+            currTokenType = Token.INT_CONST;
+            currTokenValue = String.valueOf(x);
+            jumpChar(String.valueOf(x).length());
+            return;
+        }
+        else if(isStringConst()){
+            currTokenType = Token.STRING_CONST;
+            currTokenValue = collectStringConst();
+            return;
+        }
+        else if((v = isKeyword()).length() > 0){
+              currTokenType = Token.KEYWORD;
+              currTokenValue = v;
+              jumpChar(v.length());
+            return;
+        }
+        else if(isIdentifier()){
+             currTokenType = Token.IDENTIFIER;
+             currTokenValue = collectIdentifier();
+            return;
+        }
+        if(ptr!=-1)
+            throw new Exception(String.format("Symbol %s not found",peek(1)));
+    }
 
-        System.out.print(getCurrChar());
+
+    private String collectIdentifier() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        while (hasMoreTokens() && (Character.isLetter(ptr) || Character.isDigit(ptr) || getCurrChar()=='_')){
+            sb.append(getCurrChar());
+            getNextChar();
+        }
+        return sb.toString();
+    }
+
+    private boolean isIdentifier() {
+        return Character.isLetter(ptr) ||  getCurrChar()=='_';
+    }
+
+    private String isKeyword() throws IOException {
+        inputStream.mark(11);
+        int f = ptr, i = 0;
+        StringBuilder sb = new StringBuilder();
+        if(Character.isDigit(ptr)) return sb.toString();
+        while((f!=-1) && i < 11){
+            sb.append((char)f);
+            if(JackKeyword.matches(sb.toString())) {
+                inputStream.reset();
+                return sb.toString();
+            }
+            f = inputStream.read();
+            ++i;
+        }
+        inputStream.reset();
+        return "";
+    }
+
+    private String collectStringConst() throws IOException {
+        getNextChar();
+        StringBuilder sb = new StringBuilder();
+        while(hasMoreTokens()){
+            if((char)ptr == '\"') break;
+            sb.append(getCurrChar());
+            getNextChar();
+        }
+        jumpChar(1);
+        return sb.toString();
     }
 
     private boolean isComment() throws IOException {
@@ -37,10 +113,34 @@ class JackTokenizer {
     }
 
     private boolean isSymbol() throws IOException {
-//        if(startsWith("{") || startsWith("}") || startsWith(";") || startsWith("."))
-        return false;
+        return isBraces() || isOperator() || startsWith(";") || startsWith(".") || startsWith(",") || startsWith("~");
     }
 
+    private int isIntegerConst()throws IOException{
+        inputStream.mark(6);
+        int f = ptr;
+        StringBuilder sb = new StringBuilder();
+        while((f!=-1) && (Character.isDigit((char)f))){
+            sb.append((char)f);
+            f = inputStream.read();
+        }
+        inputStream.reset();
+        if(sb.length() > 0) return Integer.parseInt(sb.toString());
+        return -1;
+    }
+
+    private boolean isStringConst() throws IOException{
+        return startsWith("\"");
+    }
+
+    private boolean isBraces() throws IOException{
+        return startsWith("{") || startsWith("}") ||  startsWith("(") || startsWith(")") || startsWith("[") || startsWith("]");
+    }
+
+    private boolean isOperator() throws IOException{
+        return startsWith("|") || startsWith("&") || startsWith("/") || startsWith("*") || startsWith("+") || startsWith("-") || startsWith("<")
+                || startsWith(">") || startsWith("=");
+    }
 
 
     // Return current token type
@@ -66,21 +166,24 @@ class JackTokenizer {
     }
 
     private void skipWhiteSpace() throws IOException {
-        while(hasMoreTokens() && Character.isWhitespace(getNextChar()));
-        removeComment();
+        while(hasMoreTokens() && Character.isWhitespace(getCurrChar())){
+            getNextChar();
+        }
     }
 
     private void removeComment() throws IOException {
             if(startsWith("//")){
-                jumpChar(3);
-                while(hasMoreTokens() && (getNextChar()!= '\n'));
+                jumpChar(2);
+                while(hasMoreTokens() && (getCurrChar()!= '\n')){
+                    getNextChar();
+                }
                 getNextChar();
             }
             if(startsWith("/*")){
-                jumpChar(3);
+                jumpChar(2);
                 while (hasMoreTokens()){
                     if(startsWith("*/")){
-                        jumpChar(3);
+                        jumpChar(2);
                         break;
                     }
                     getNextChar();
@@ -89,19 +192,24 @@ class JackTokenizer {
     }
 
     private boolean startsWith(String s) throws IOException {
-        inputStream.mark(s.length()+1);
+        return peek(s.length()).startsWith(s);
+    }
+
+    private String peek(int x) throws IOException{
+        StringBuilder sb = new StringBuilder();
+        inputStream.mark(x);
         int f = ptr;
-        for(int i=0; i < s.length(); i++){
-            if(f==-1 || (char)f != s.charAt(i)) return false;
+        while(x-- > 0 && !(f==-1)){
+            sb.append((char)f);
             f = inputStream.read();
         }
         inputStream.reset();
-        return true;
+        return sb.toString();
     }
 
     // Return the keyword if current token is keyword
     JackKeyword getKeyword(){
-        return null;
+        return JackKeyword.valueOf(currTokenValue.toUpperCase());
     }
 
     // Return the identifier for current token
@@ -116,11 +224,17 @@ class JackTokenizer {
 
     // Return StringVal of the current token
     String getStringVal(){
-        return null;
+        return currTokenValue;
     }
 
     private void setCurrToken(String val, Token type){
         currTokenType = type;
         currTokenValue = val;
     }
+
+
+    void close() throws IOException {
+        inputStream.close();
+    }
+
 }

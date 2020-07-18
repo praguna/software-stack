@@ -19,5 +19,12 @@ enum JackKeyword {
     TRUE,
     FALSE,
     NULL,
-    THIS
+    THIS;
+
+    public static boolean matches(String token){
+        for(JackKeyword keyword : JackKeyword.values()){
+            if(keyword.name().toLowerCase().equals(token)) return true;
+        }
+        return false;
+    }
 }
