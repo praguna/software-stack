@@ -15,8 +15,62 @@ class CompilationEngine {
         this.inputStream = inputStream;
     }
 
-    // complete compilation process
-    void compile(){
+    // compile class NT
+    void compileClass(){
+
+    }
+
+    // compile Declared Variables of class
+    void compileClassCarDec(){
+
+    }
+
+    // The below functions compile a method, function or constructor, parameter list, variable Declaration
+    void compileSubroutine(){
+
+    }
+
+
+    void compileParameterList(){
+
+    }
+
+    void compileVarDec(){
+
+    }
+
+    // Below methods compile statements
+    void compileDo(){
+
+    }
+
+    void compileLet(){
+
+    }
+
+    void compileWhile(){
+
+    }
+
+    void compileIf(){
+
+    }
+
+    void compileReturn(){
+
+    }
+
+    void compileExpression(){
+
+    }
+
+    // usage of LL(2) parsing
+    void compileTerm(){
+
+    }
+
+    // complete syntax Analyzer process
+    void compileSyntaxAnalyzer(){
 
     }
 
