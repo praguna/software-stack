@@ -21,6 +21,7 @@ enum JackKeyword {
     NULL,
     THIS;
 
+    // returns if the current token matches any of the keywords or not
     public static boolean matches(String token){
         for(JackKeyword keyword : JackKeyword.values()){
             if(keyword.name().toLowerCase().equals(token)) return true;

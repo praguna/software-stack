@@ -2,13 +2,16 @@ import java.io.*;
 
 /*
     Handles tokens of the source code
+    Implementation : String matching from inputStream
  */
 
 class JackTokenizer {
     private BufferedInputStream inputStream;
-    private int ptr;
+    private int ptr; // code point in the stream
+    // These two variables are null, null if token is absent or skipped in advance, otherwise contain token value and token type
     private String currTokenValue;
     private Token currTokenType;
+    // initialize the stream
     JackTokenizer(InputStream inputStream){
         this.inputStream = new BufferedInputStream(inputStream);
     }
@@ -64,7 +67,7 @@ class JackTokenizer {
             throw new Exception(String.format("Symbol %s not found",peek(1)));
     }
 
-
+    // returns the value of identifier
     private String collectIdentifier() throws IOException {
         StringBuilder sb = new StringBuilder();
         while (hasMoreTokens() && (Character.isLetter(ptr) || Character.isDigit(ptr) || getCurrChar()=='_')){
@@ -74,10 +77,12 @@ class JackTokenizer {
         return sb.toString();
     }
 
+    // check if it is an identifier
     private boolean isIdentifier() {
         return Character.isLetter(ptr) ||  getCurrChar()=='_';
     }
 
+    // check if it is a keyword
     private String isKeyword() throws IOException {
         inputStream.mark(11);
         int f = ptr, i = 0;
@@ -96,6 +101,7 @@ class JackTokenizer {
         return "";
     }
 
+    // returns the value of String const
     private String collectStringConst() throws IOException {
         getNextChar();
         StringBuilder sb = new StringBuilder();
@@ -108,14 +114,17 @@ class JackTokenizer {
         return sb.toString();
     }
 
+    // check if it is a comment
     private boolean isComment() throws IOException {
         return startsWith("//") || startsWith("/*");
     }
 
+    // check if it is a symbol
     private boolean isSymbol() throws IOException {
         return isBraces() || isOperator() || startsWith(";") || startsWith(".") || startsWith(",") || startsWith("~");
     }
 
+    // check if it is an integer constant and also return the integer value
     private int isIntegerConst()throws IOException{
         inputStream.mark(6);
         int f = ptr;
@@ -129,14 +138,17 @@ class JackTokenizer {
         return -1;
     }
 
+    // check if it is a string const
     private boolean isStringConst() throws IOException{
         return startsWith("\"");
     }
 
+    // check if it is braces
     private boolean isBraces() throws IOException{
         return startsWith("{") || startsWith("}") ||  startsWith("(") || startsWith(")") || startsWith("[") || startsWith("]");
     }
 
+    // check if it is an operator
     private boolean isOperator() throws IOException{
         return startsWith("|") || startsWith("&") || startsWith("/") || startsWith("*") || startsWith("+") || startsWith("-") || startsWith("<")
                 || startsWith(">") || startsWith("=");
@@ -148,6 +160,7 @@ class JackTokenizer {
         return  currTokenType;
     }
 
+    // move to i characters forward in the stream and return it, starting from next character
     private char jumpChar(int i) throws IOException {
         char c = (char)ptr;
         while(i-- > 0){
@@ -160,17 +173,20 @@ class JackTokenizer {
         return (char)ptr;
     }
 
+    // return the next character of te stream
     private char getNextChar() throws IOException {
         if(hasMoreTokens()) ptr = inputStream.read();
         return (char)ptr;
     }
 
+    // ignore whitespace
     private void skipWhiteSpace() throws IOException {
         while(hasMoreTokens() && Character.isWhitespace(getCurrChar())){
             getNextChar();
         }
     }
 
+    // ignore comment of two types
     private void removeComment() throws IOException {
             if(startsWith("//")){
                 jumpChar(2);
@@ -191,10 +207,12 @@ class JackTokenizer {
             }
     }
 
+    // does the next stream of characters start with s ?
     private boolean startsWith(String s) throws IOException {
         return peek(s.length()).startsWith(s);
     }
 
+    // returns a string of next (x-1) characters and the present
     private String peek(int x) throws IOException{
         StringBuilder sb = new StringBuilder();
         inputStream.mark(x);
@@ -227,12 +245,13 @@ class JackTokenizer {
         return currTokenValue;
     }
 
+    // set token value and token type
     private void setCurrToken(String val, Token type){
         currTokenType = type;
         currTokenValue = val;
     }
 
-
+    // close the read stream
     void close() throws IOException {
         inputStream.close();
     }

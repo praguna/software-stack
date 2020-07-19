@@ -3,6 +3,7 @@ import java.util.List;
 
 /*
     Handles Jack Grammar
+    Implementation : Top down Recursion, LL(2) Parser
  */
 class CompilationEngine {
     private JackTokenizer jackTokenizer;
@@ -19,7 +20,7 @@ class CompilationEngine {
 
     }
 
-    // creates a file of the output of Tokenization
+    // creates a file of the output of Tokenization, this is used in unit testing for correct token generation
     void compileOnlyTokens() throws Exception {
         writer.println("<tokens>");
         while(jackTokenizer.hasMoreTokens()){
@@ -38,6 +39,7 @@ class CompilationEngine {
         writer.println("</tokens>");
     }
 
+    // close all streams and print the end message
     void close(String of) throws IOException {
         System.out.println(String.format("Done writing to Output File @ : %s  :)",of));
         writer.close();
