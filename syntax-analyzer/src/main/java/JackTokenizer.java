@@ -245,6 +245,11 @@ class JackTokenizer {
         return currTokenValue;
     }
 
+    // Return Symbol value of current token
+    char getSymbol(){
+        return getCurrChar();
+    }
+
     // set token value and token type
     private void setCurrToken(String val, Token type){
         currTokenType = type;
