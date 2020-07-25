@@ -29,6 +29,7 @@ public class JackAnalyzer {
     public static void main(String[] args) throws Exception {
         if(args.length == 0){
             System.err.println("Expected Input file name or directory");
+            return;
         }
         String inputPath = args[0];
         File file = new File(inputPath);

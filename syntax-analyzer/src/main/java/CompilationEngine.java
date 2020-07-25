@@ -21,8 +21,20 @@ class CompilationEngine {
     }
 
     // compile Declared Variables of class
-    void compileClassCarDec(){
-
+    void compileClassCarDec() throws Exception {
+        String tokenVal = getTokenVal();
+        if(tokenVal.equals("static") || tokenVal.equals("field")){
+            eat(tokenVal, Token.KEYWORD);
+            eatType();
+            eatIdentifier();
+            tokenVal = getTokenVal();
+            while(tokenVal.equals(",")) {
+                eat(",", Token.SYMBOL);
+                eatIdentifier();
+                tokenVal = getTokenVal();
+            }
+            eat(";", getTokenType());
+        }
     }
 
     // The below functions compile a method, function or constructor, parameter list, variable Declaration
@@ -72,6 +84,48 @@ class CompilationEngine {
     // complete syntax Analyzer process
     void compileSyntaxAnalyzer(){
 
+    }
+
+    private Token getTokenType() {
+        return jackTokenizer.getTokenType();
+    }
+
+    private void eatType() throws Exception {
+        String tokenVal = getTokenVal();
+        Token tokenType = getTokenType();
+        if(tokenType.equals(Token.KEYWORD) && !JackKeyword.isType(tokenVal)){
+            throwException("DataType int, char or boolean",tokenVal,tokenVal);
+        }
+        if(tokenType.equals(Token.IDENTIFIER)) eat(tokenVal ,Token.IDENTIFIER);
+        else eat(tokenVal,Token.KEYWORD);
+    }
+
+    private void eatIdentifier() throws Exception {
+        String tokenVal = getTokenVal();
+        eat(tokenVal ,Token.IDENTIFIER);
+    }
+
+    private void eat(String s, Token token) throws Exception {
+        String tokenVal = getTokenVal();
+        if(!s.equals(tokenVal)){
+            throwException(s,tokenVal,tokenVal);
+        }
+        if(!getTokenType().equals(token)){
+            throwException(token.getAlias(),getTokenType().getAlias(),tokenVal);
+        }
+        if(!jackTokenizer.hasMoreTokens()){
+            throw new Exception(String.format("Reached end of file Too Soon @ :: %s",s));
+        }
+        jackTokenizer.advance();
+    }
+
+    private void throwException(String expected, String got, String at) throws Exception {
+        throw new Exception(String.format("Mismatch expected %s got :: %s @ %s",expected,got,at));
+    }
+
+
+    private String getTokenVal() {
+        return jackTokenizer.getStringVal();
     }
 
     // creates a file of the output of Tokenization, this is used in unit testing for correct token generation

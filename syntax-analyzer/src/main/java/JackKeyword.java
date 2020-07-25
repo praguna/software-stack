@@ -28,4 +28,10 @@ enum JackKeyword {
         }
         return false;
     }
+
+    // checks if it is a datatype
+    public static boolean isType(String token){
+        JackKeyword keyword = JackKeyword.valueOf(token.toUpperCase());
+        return keyword.equals(INT) || keyword.equals(BOOLEAN) || keyword.equals(CHAR);
+    }
 }
