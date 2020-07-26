@@ -20,9 +20,11 @@ public class JackAnalyzer {
     private static void generateFileCode(String inputPath) throws Exception {
         FileInputStream fileInputStream = new FileInputStream(inputPath);
         String of = getOutputPath(inputPath);
+        System.out.println("Composing for Input Path @ "+inputPath);
         PrintWriter writer = new PrintWriter(of);
         CompilationEngine compilationEngine = new CompilationEngine(fileInputStream, writer);
-        compilationEngine.compileOnlyTokens();
+//        compilationEngine.compileOnlyTokens();
+        compilationEngine.compileSyntaxAnalyzer();
         compilationEngine.close(of);
     }
 

@@ -63,8 +63,9 @@ class JackTokenizer {
              currTokenValue = collectIdentifier();
             return;
         }
-        if(ptr!=-1)
-            throw new Exception(String.format("Symbol %s not found",peek(1)));
+        if(ptr!=-1) {
+            throw new Exception(String.format("Symbol %s not found", peek(1)));
+        }
     }
 
     // returns the value of identifier

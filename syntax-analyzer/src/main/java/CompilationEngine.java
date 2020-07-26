@@ -16,6 +16,7 @@ class CompilationEngine {
 
     // compile class NT
     void compileClass() throws Exception {
+        writeOpen("class");
         eat("class", Token.KEYWORD);
         eatIdentifier();
         eat("{",Token.SYMBOL);
@@ -29,10 +30,12 @@ class CompilationEngine {
             tokenVal = getTokenVal();
         }
         eat("}",Token.SYMBOL);
+        writeClose("class");
     }
 
     // compile Declared Variables of class or Method
     void compileClassVarDec() throws Exception {
+            writeOpen("classVarDec");
             String tokenVal = getTokenVal();
             eat(tokenVal, Token.KEYWORD);
             eatType();
@@ -44,10 +47,12 @@ class CompilationEngine {
                 tokenVal = getTokenVal();
             }
             eat(";", getTokenType());
+            writeClose("classVarDec");
     }
 
     // The below functions compile a method, function or constructor, parameter list, variable Declaration
     void compileSubroutine() throws Exception {
+        writeOpen("subroutineDec");
         String tokenVal = getTokenVal();
         eat(tokenVal, Token.KEYWORD);
         tokenVal = getTokenVal();
@@ -58,14 +63,18 @@ class CompilationEngine {
         }
         eatIdentifier();
         eat("(",Token.SYMBOL);
+        writeOpen("parameterList");
         if(!getTokenVal().equals(")")) {
             compileParameterList();
         }
+        writeClose("parameterList");
         eat(")",Token.SYMBOL);
         compileSubroutineBody();
+        writeClose("subroutineDec");
     }
 
     void compileSubroutineBody() throws Exception {
+        writeOpen("subroutineBody");
         eat("{",Token.SYMBOL);
         String tokenVal = getTokenVal();
         while(tokenVal.equals("var")) {
@@ -74,6 +83,7 @@ class CompilationEngine {
         }
         compileStatements();
         eat("}",Token.SYMBOL);
+        writeClose("subroutineBody");
     }
 
 
@@ -90,11 +100,22 @@ class CompilationEngine {
     }
 
     void compileVarDec() throws Exception {
+        writeOpen("varDec");
         eat("var",Token.KEYWORD);
-        compileClassVarDec();
+        eatType();
+        eatIdentifier();
+        String tokenValue = getTokenVal();
+        while(tokenValue.equals(",")){
+            eat(",",Token.SYMBOL);
+            eatIdentifier();
+            tokenValue = getTokenVal();
+        }
+        eat(";",Token.SYMBOL);
+        writeClose("varDec");
     }
 
     void compileStatements() throws Exception {
+        writeOpen("statements");
         String tokenVal = getTokenVal();
         if(!JackAnalyzerUtils.isStatement(tokenVal)){
             throwException("Statement Type",tokenVal,tokenVal);
@@ -109,10 +130,12 @@ class CompilationEngine {
             }
             tokenVal = getTokenVal();
         }
+        writeClose("statements");
     }
 
     // Below methods compile statements
     void compileDo() throws Exception {
+        writeOpen("doStatement");
         eat("do", Token.KEYWORD);
         eatIdentifier();
         String tokenVal = getTokenVal();
@@ -124,9 +147,11 @@ class CompilationEngine {
         compileExpressionList();
         eat(")",Token.SYMBOL);
         eat(";",Token.SYMBOL);
+        writeClose("doStatement");
     }
 
     void compileLet() throws Exception {
+        writeOpen("letStatement");
         eat("let",Token.KEYWORD);
         eatIdentifier();
         String tokenVal = getTokenVal();
@@ -138,9 +163,11 @@ class CompilationEngine {
         eat("=",Token.SYMBOL);
         compileExpression();
         eat(";",Token.SYMBOL);
+        writeClose("letStatement");
     }
 
     void compileWhile() throws Exception {
+        writeOpen("whileStatement");
         eat("while",Token.KEYWORD);
         eat("(",Token.SYMBOL);
         compileExpression();
@@ -148,9 +175,11 @@ class CompilationEngine {
         eat("{",Token.SYMBOL);
         compileStatements();
         eat("}",Token.SYMBOL);
+        writeClose("whileStatement");
     }
 
     void compileIf() throws Exception {
+        writeOpen("ifStatement");
         eat("if",Token.KEYWORD);
         eat("(",Token.SYMBOL);
         compileExpression();
@@ -165,48 +194,69 @@ class CompilationEngine {
             compileStatements();
             eat("}",Token.SYMBOL);
         }
+        writeClose("ifStatement");
     }
 
     void compileReturn() throws Exception {
+        writeOpen("returnStatement");
         eat("return",Token.KEYWORD);
-        compileExpression();
+        if(!getTokenVal().equals(";"))
+            compileExpression();
         eat(";",Token.SYMBOL);
+        writeClose("returnStatement");
     }
 
     void compileExpression() throws Exception {
+        writeOpen("expression");
         compileTerm();
         String tokenVal = getTokenVal();
         while(JackAnalyzerUtils.isOperator(tokenVal)){
+            eat(tokenVal,Token.SYMBOL);
             compileTerm();
             tokenVal =getTokenVal();
         }
+        writeClose("expression");
     }
 
     void compileExpressionList() throws Exception {
-        compileExpression();
+        writeOpen("expressionList");
         String tokenVal = getTokenVal();
+        // empty arguments
+        if(tokenVal.equals(")")){
+            writeClose("expressionList");
+            return;
+        }
+        compileExpression();
+        tokenVal = getTokenVal();
         while(tokenVal.equals(",")){
             eat(",",Token.SYMBOL);
             compileExpression();
+            tokenVal = getTokenVal();
         }
+        writeClose("expressionList");
     }
 
     // usage of LL(2) parsing
     void compileTerm() throws Exception {
+        writeOpen("term");
         String tokenVal = getTokenVal();
         Token tokeType = getTokenType();
         if(tokeType.equals(Token.INT_CONST) || tokeType.equals(Token.STRING_CONST)  || tokeType.equals(Token.KEYWORD)) {
            eat(tokenVal, tokeType);
+            writeClose("term");
            return;
         }
         else if(JackAnalyzerUtils.isUnary(tokenVal)){
             eat(tokenVal, Token.SYMBOL);
+            compileTerm();
+            writeClose("term");
             return;
         }
         else if(tokenVal.equals("(")){
             eat("(", Token.SYMBOL);
             compileExpression();
             eat(")", Token.SYMBOL);
+            writeClose("term");
             return;
         }
         eatIdentifier();
@@ -215,20 +265,26 @@ class CompilationEngine {
             eat("[", Token.SYMBOL);
             compileExpression();
             eat("]", Token.SYMBOL);
+            writeClose("term");
             return;
         }
         // sub routine body checker
-        if(tokenVal.equals(".")) {
-            eat(".", Token.SYMBOL);
-            eatIdentifier();
+        if (tokenVal.equals(".") || tokenVal.equals("(")) {
+            if(tokenVal.equals(".")) {
+                eat(".", Token.SYMBOL);
+                eatIdentifier();
+            }
+            eat("(", Token.SYMBOL);
+            compileExpressionList();
+            eat(")", Token.SYMBOL);
         }
-        eat("(", Token.SYMBOL);
-        compileExpressionList();
-        eat(")",Token.SYMBOL);
+        writeClose("term");
     }
 
     // complete syntax Analyzer process
     void compileSyntaxAnalyzer() throws Exception {
+        // read the first token, expected as class
+        advance();
         compileClass();
     }
 
@@ -236,6 +292,7 @@ class CompilationEngine {
         return jackTokenizer.getTokenType();
     }
 
+    // wrapper to Consume Data Type
     private void eatType() throws Exception {
         String tokenVal = getTokenVal();
         Token tokenType = getTokenType();
@@ -246,32 +303,55 @@ class CompilationEngine {
         else eat(tokenVal,Token.KEYWORD);
     }
 
+    // wrapper to Consume identifier
     private void eatIdentifier() throws Exception {
         String tokenVal = getTokenVal();
         eat(tokenVal ,Token.IDENTIFIER);
     }
 
+    // consume a token validate and advance
     private void eat(String s, Token token) throws Exception {
         String tokenVal = getTokenVal();
         if(!s.equals(tokenVal)){
             throwException(s,tokenVal,tokenVal);
         }
         if(!getTokenType().equals(token)){
-            throwException(token.getAlias(),getTokenType().getAlias(),tokenVal);
+            throwException("<type>"+token.getAlias(),"<type>"+getTokenType().getAlias(),tokenVal);
         }
         if(!jackTokenizer.hasMoreTokens()){
             throw new Exception(String.format("Reached end of file Too Soon @ :: %s",s));
         }
-        jackTokenizer.advance();
+        if(token.equals(Token.SYMBOL))
+            writer.printf("<%s> %s </%s>\n",token.getAlias(),JackAnalyzerUtils.getHtml(tokenVal),token.getAlias());
+        else
+            writer.printf("<%s> %s </%s>\n",token.getAlias(),tokenVal,token.getAlias());
+        advance();
     }
 
+    // wrapper to print Exception
     private void throwException(String expected, String got, String at) throws Exception {
         throw new Exception(String.format("Mismatch expected %s got :: %s @ %s",expected,got,at));
     }
 
-
+    // wrapper to getTokenValue
     private String getTokenVal() {
         return jackTokenizer.getStringVal();
+    }
+
+    private void writeOpen(String val){
+        writer.printf("<%s>\n",val);
+    }
+
+    private void writeClose(String val){
+        writer.printf("</%s>\n",val);
+    }
+
+    // advance wrapper for Tokenizer
+    private void advance() throws Exception {
+        jackTokenizer.advance();
+        while (jackTokenizer.hasMoreTokens() && getTokenVal()==null) {
+            jackTokenizer.advance();
+        }
     }
 
     // creates a file of the output of Tokenization, this is used in unit testing for correct token generation
