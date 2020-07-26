@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.List;
 
 /*
     Handles Jack Grammar
@@ -16,14 +15,25 @@ class CompilationEngine {
     }
 
     // compile class NT
-    void compileClass(){
-
+    void compileClass() throws Exception {
+        eat("class", Token.KEYWORD);
+        eatIdentifier();
+        eat("{",Token.SYMBOL);
+        String tokenVal = getTokenVal();
+        while(tokenVal.equals("static") || tokenVal.equals("field")){
+            compileClassVarDec();
+            tokenVal = getTokenVal();
+        }
+        while (tokenVal.equals("constructor") || tokenVal.equals("function") || tokenVal.equals("method")){
+            compileSubroutine();
+            tokenVal = getTokenVal();
+        }
+        eat("}",Token.SYMBOL);
     }
 
-    // compile Declared Variables of class
-    void compileClassCarDec() throws Exception {
-        String tokenVal = getTokenVal();
-        if(tokenVal.equals("static") || tokenVal.equals("field")){
+    // compile Declared Variables of class or Method
+    void compileClassVarDec() throws Exception {
+            String tokenVal = getTokenVal();
             eat(tokenVal, Token.KEYWORD);
             eatType();
             eatIdentifier();
@@ -34,56 +44,192 @@ class CompilationEngine {
                 tokenVal = getTokenVal();
             }
             eat(";", getTokenType());
-        }
     }
 
     // The below functions compile a method, function or constructor, parameter list, variable Declaration
-    void compileSubroutine(){
+    void compileSubroutine() throws Exception {
+        String tokenVal = getTokenVal();
+        eat(tokenVal, Token.KEYWORD);
+        tokenVal = getTokenVal();
+        if(tokenVal.equals("void")){
+            eat(tokenVal, Token.KEYWORD);
+        }else{
+            eatType();
+        }
+        eatIdentifier();
+        eat("(",Token.SYMBOL);
+        if(!getTokenVal().equals(")")) {
+            compileParameterList();
+        }
+        eat(")",Token.SYMBOL);
+        compileSubroutineBody();
+    }
 
+    void compileSubroutineBody() throws Exception {
+        eat("{",Token.SYMBOL);
+        String tokenVal = getTokenVal();
+        while(tokenVal.equals("var")) {
+            compileVarDec();
+            tokenVal = getTokenVal();
+        }
+        compileStatements();
+        eat("}",Token.SYMBOL);
     }
 
 
-    void compileParameterList(){
-
+    void compileParameterList() throws Exception {
+        eatType();
+        eatIdentifier();
+        String tokenVal = getTokenVal();
+        while(tokenVal.equals(",")){
+            eat(",",Token.SYMBOL);
+            eatType();
+            eatIdentifier();
+            tokenVal = getTokenVal();
+        }
     }
 
-    void compileVarDec(){
+    void compileVarDec() throws Exception {
+        eat("var",Token.KEYWORD);
+        compileClassVarDec();
+    }
 
+    void compileStatements() throws Exception {
+        String tokenVal = getTokenVal();
+        if(!JackAnalyzerUtils.isStatement(tokenVal)){
+            throwException("Statement Type",tokenVal,tokenVal);
+        }
+        while(JackAnalyzerUtils.isStatement(tokenVal)){
+            switch (tokenVal) {
+                case "do" -> compileDo();
+                case "let" -> compileLet();
+                case "while" -> compileWhile();
+                case "if" -> compileIf();
+                case "return" -> compileReturn();
+            }
+            tokenVal = getTokenVal();
+        }
     }
 
     // Below methods compile statements
-    void compileDo(){
-
+    void compileDo() throws Exception {
+        eat("do", Token.KEYWORD);
+        eatIdentifier();
+        String tokenVal = getTokenVal();
+        if(tokenVal.equals(".")) {
+            eat(".", Token.SYMBOL);
+            eatIdentifier();
+        }
+        eat("(", Token.SYMBOL);
+        compileExpressionList();
+        eat(")",Token.SYMBOL);
+        eat(";",Token.SYMBOL);
     }
 
-    void compileLet(){
-
+    void compileLet() throws Exception {
+        eat("let",Token.KEYWORD);
+        eatIdentifier();
+        String tokenVal = getTokenVal();
+        if(tokenVal.equals("[")){
+            eat("[",Token.SYMBOL);
+            compileExpression();
+            eat("]",Token.SYMBOL);
+        }
+        eat("=",Token.SYMBOL);
+        compileExpression();
+        eat(";",Token.SYMBOL);
     }
 
-    void compileWhile(){
-
+    void compileWhile() throws Exception {
+        eat("while",Token.KEYWORD);
+        eat("(",Token.SYMBOL);
+        compileExpression();
+        eat(")",Token.SYMBOL);
+        eat("{",Token.SYMBOL);
+        compileStatements();
+        eat("}",Token.SYMBOL);
     }
 
-    void compileIf(){
-
+    void compileIf() throws Exception {
+        eat("if",Token.KEYWORD);
+        eat("(",Token.SYMBOL);
+        compileExpression();
+        eat(")",Token.SYMBOL);
+        eat("{",Token.SYMBOL);
+        compileStatements();
+        eat("}",Token.SYMBOL);
+        String tokenVal =  getTokenVal();
+        if(tokenVal.equals("else")){
+            eat("else",Token.KEYWORD);
+            eat("{",Token.SYMBOL);
+            compileStatements();
+            eat("}",Token.SYMBOL);
+        }
     }
 
-    void compileReturn(){
-
+    void compileReturn() throws Exception {
+        eat("return",Token.KEYWORD);
+        compileExpression();
+        eat(";",Token.SYMBOL);
     }
 
-    void compileExpression(){
+    void compileExpression() throws Exception {
+        compileTerm();
+        String tokenVal = getTokenVal();
+        while(JackAnalyzerUtils.isOperator(tokenVal)){
+            compileTerm();
+            tokenVal =getTokenVal();
+        }
+    }
 
+    void compileExpressionList() throws Exception {
+        compileExpression();
+        String tokenVal = getTokenVal();
+        while(tokenVal.equals(",")){
+            eat(",",Token.SYMBOL);
+            compileExpression();
+        }
     }
 
     // usage of LL(2) parsing
-    void compileTerm(){
-
+    void compileTerm() throws Exception {
+        String tokenVal = getTokenVal();
+        Token tokeType = getTokenType();
+        if(tokeType.equals(Token.INT_CONST) || tokeType.equals(Token.STRING_CONST)  || tokeType.equals(Token.KEYWORD)) {
+           eat(tokenVal, tokeType);
+           return;
+        }
+        else if(JackAnalyzerUtils.isUnary(tokenVal)){
+            eat(tokenVal, Token.SYMBOL);
+            return;
+        }
+        else if(tokenVal.equals("(")){
+            eat("(", Token.SYMBOL);
+            compileExpression();
+            eat(")", Token.SYMBOL);
+            return;
+        }
+        eatIdentifier();
+        tokenVal = getTokenVal();
+        if(tokenVal.equals("[")){
+            eat("[", Token.SYMBOL);
+            compileExpression();
+            eat("]", Token.SYMBOL);
+            return;
+        }
+        // sub routine body checker
+        if(tokenVal.equals(".")) {
+            eat(".", Token.SYMBOL);
+            eatIdentifier();
+        }
+        eat("(", Token.SYMBOL);
+        compileExpressionList();
+        eat(")",Token.SYMBOL);
     }
 
     // complete syntax Analyzer process
-    void compileSyntaxAnalyzer(){
-
+    void compileSyntaxAnalyzer() throws Exception {
+        compileClass();
     }
 
     private Token getTokenType() {
@@ -135,10 +281,10 @@ class CompilationEngine {
             if(jackTokenizer.getStringVal()!=null && jackTokenizer.getTokenType()!=null){
                 String entry = jackTokenizer.getStringVal();
                 if(jackTokenizer.getTokenType().equals(Token.SYMBOL)){
-                    entry = JackTokenizerUtils.getHtml(entry);
+                    entry = JackAnalyzerUtils.getHtml(entry);
                 }
-                String val = JackTokenizerUtils.getOpenTag(jackTokenizer.getTokenType().getAlias()) + " "+entry+" "
-                        + JackTokenizerUtils.getCloseTag(jackTokenizer.getTokenType().getAlias());
+                String val = JackAnalyzerUtils.getOpenTag(jackTokenizer.getTokenType().getAlias()) + " "+entry+" "
+                        + JackAnalyzerUtils.getCloseTag(jackTokenizer.getTokenType().getAlias());
                 writer.println(val);
 
             }
