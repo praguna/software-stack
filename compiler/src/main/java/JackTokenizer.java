@@ -88,15 +88,15 @@ class JackTokenizer {
         inputStream.mark(11);
         int f = ptr, i = 0;
         StringBuilder sb = new StringBuilder();
-        if(Character.isDigit(ptr)) return sb.toString();
-        while((f!=-1) && i < 11){
+        if(Character.isDigit(ptr)) return "";
+        while((f!=-1) && i < 11 && Character.isLetter(f)){
             sb.append((char)f);
-            if(JackKeyword.matches(sb.toString())) {
-                inputStream.reset();
-                return sb.toString();
-            }
             f = inputStream.read();
             ++i;
+        }
+        if(JackKeyword.matches(sb.toString())) {
+            inputStream.reset();
+            return sb.toString();
         }
         inputStream.reset();
         return "";
@@ -228,8 +228,7 @@ class JackTokenizer {
 
     // Return the keyword if current token is keyword
     JackKeyword getKeyword(){
-        JackKeyword jackKeyword = JackKeyword.valueOf(currTokenValue.toUpperCase());
-        return jackKeyword;
+        return JackKeyword.valueOf(currTokenValue.toUpperCase());
     }
 
     // Return the identifier for current token

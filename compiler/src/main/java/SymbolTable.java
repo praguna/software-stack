@@ -1,12 +1,14 @@
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 enum Kind {
-    STATIC,FIELD,ARG,VAR
+    STATIC,FIELD,ARGUMENT,VAR
 }
 
 public class SymbolTable {
 
+    // Scope Tables
     HashMap<String,Details> classScope;
     HashMap<Kind, Integer> kindCount;
     HashMap<String,Details> subroutineScope;
@@ -17,6 +19,20 @@ public class SymbolTable {
         kindCount = new HashMap<>();
     }
 
+    void resetSubroutine(String name){
+        System.out.printf("****************** SUBROUTINE SCOPE %s *******************\n\n",name);
+        printEntries(subroutineScope);
+        subroutineScope.clear();
+        kindCount.clear();
+    }
+
+    void reset(){
+        subroutineScope.clear();
+        classScope.clear();
+        kindCount.clear();
+    }
+
+    // add entry to symbol table
     void define(String name, String type, Kind kind){
         int count = varCount(kind);
         if(!isClassScope(kind)){
@@ -27,10 +43,12 @@ public class SymbolTable {
         kindCount.put(kind,++count);
     }
 
+    // maintain index of a type
     int varCount(Kind type){
         return kindCount.getOrDefault(type,0);
     }
 
+    // retrieve values
     Kind kindOf(String name){
         return getDetailByName(name).getKind();
     }
@@ -42,6 +60,7 @@ public class SymbolTable {
         return getDetailByName(name).getIndex();
     }
 
+    // search in the table for the variable
     private Details getDetailByName(String name){
         Details detail = subroutineScope.get(name);
         if(Objects.isNull(detail)){
@@ -50,10 +69,31 @@ public class SymbolTable {
         return detail;
     }
 
+    // determine if class scope
     private boolean isClassScope(Kind kind){
         return kind.equals(Kind.STATIC) || kind.equals(Kind.FIELD);
     }
 
+    // print the table
+    void printClassScope(){
+        System.out.println("******************* CLASS SCOPE **************************\n");
+        printEntries(classScope);
+    }
+
+    private void printEntries(HashMap<String,Details> scope){
+        System.out.println("------------------------------------");
+        System.out.print("| Name | => | Type , Kind , Index | \n");
+        System.out.println("------------------------------------");
+        if(scope.isEmpty()) System.out.println(" THIS PORTION IS EMPTY ");
+        for (Map.Entry<String, Details> entry : scope.entrySet()) {
+            String key = entry.getKey();
+            Details value = entry.getValue();
+            System.out.printf("| %s | => | %s , %s ,%s | \n", key, value.getDataType(), value.getKind().name().toLowerCase(), value.getIndex());
+        }
+        System.out.println("------------------------------------");
+    }
+
+    // model class to store entry details
     private static class Details{
         private int index;
         private Kind kind;

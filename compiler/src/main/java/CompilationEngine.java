@@ -1,17 +1,23 @@
 import java.io.*;
+import java.util.Objects;
 
 /*
     Handles Jack Grammar
     Implementation : Top down Recursion, LL(2) Parser
  */
 class CompilationEngine {
-    private JackTokenizer jackTokenizer;
-    private PrintWriter writer;
-    private InputStream inputStream;
-    CompilationEngine(FileInputStream inputStream, Writer writer){
-        this.writer = (PrintWriter) writer;
+    private final JackTokenizer jackTokenizer;
+    private final PrintWriter writer;
+    private final SymbolTable symbolTable;
+    private String currType;
+    private Kind currkind;
+    private String currSubroutine;
+    private final boolean stopXmlWrites;
+    CompilationEngine(FileInputStream inputStream, PrintWriter writer){
+        this.writer = writer;
         this.jackTokenizer = new JackTokenizer(inputStream);
-        this.inputStream = inputStream;
+        this.symbolTable = new SymbolTable();
+        this.stopXmlWrites = true;
     }
 
     // compile class NT
@@ -22,22 +28,28 @@ class CompilationEngine {
         eat("{", JackToken.SYMBOL);
         String tokenVal = getTokenVal();
         while(tokenVal.equals("static") || tokenVal.equals("field")){
+            setCurrKind(tokenVal);
             compileClassVarDec();
             tokenVal = getTokenVal();
         }
+        setCurrKind(null);
         while (tokenVal.equals("constructor") || tokenVal.equals("function") || tokenVal.equals("method")){
             compileSubroutine();
             tokenVal = getTokenVal();
         }
         eat("}", JackToken.SYMBOL);
+        if(jackTokenizer.hasMoreTokens()) throwException(null, getTokenVal() ,"last point");
         writeClose("class");
     }
+
+
 
     // compile Declared Variables of class or Method
     void compileClassVarDec() throws Exception {
             writeOpen("classVarDec");
             String tokenVal = getTokenVal();
             eat(tokenVal, JackToken.KEYWORD);
+            setCurrType(getTokenVal());
             eatType();
             eatIdentifier();
             tokenVal = getTokenVal();
@@ -47,6 +59,7 @@ class CompilationEngine {
                 tokenVal = getTokenVal();
             }
             eat(";", getTokenType());
+            setCurrType(null);
             writeClose("classVarDec");
     }
 
@@ -61,6 +74,7 @@ class CompilationEngine {
         }else{
             eatType();
         }
+        setCurrSubroutine(getTokenVal());
         eatIdentifier();
         eat("(", JackToken.SYMBOL);
         writeOpen("parameterList");
@@ -71,6 +85,8 @@ class CompilationEngine {
         eat(")", JackToken.SYMBOL);
         compileSubroutineBody();
         writeClose("subroutineDec");
+        symbolTable.resetSubroutine(currSubroutine);
+        setCurrSubroutine(null);
     }
 
     void compileSubroutineBody() throws Exception {
@@ -88,20 +104,28 @@ class CompilationEngine {
 
 
     void compileParameterList() throws Exception {
+        setCurrKind("argument");
+        setCurrType(getTokenVal());
         eatType();
         eatIdentifier();
         String tokenVal = getTokenVal();
         while(tokenVal.equals(",")){
             eat(",", JackToken.SYMBOL);
+            setCurrType(getTokenVal());
             eatType();
             eatIdentifier();
+            setCurrType(null);
             tokenVal = getTokenVal();
         }
+        setCurrType(null);
+        setCurrKind(null);
     }
 
     void compileVarDec() throws Exception {
         writeOpen("varDec");
+        setCurrKind("var");
         eat("var", JackToken.KEYWORD);
+        setCurrType(getTokenVal());
         eatType();
         eatIdentifier();
         String tokenValue = getTokenVal();
@@ -111,6 +135,8 @@ class CompilationEngine {
             tokenValue = getTokenVal();
         }
         eat(";", JackToken.SYMBOL);
+        setCurrType(null);
+        setCurrKind(null);
         writeClose("varDec");
     }
 
@@ -307,9 +333,12 @@ class CompilationEngine {
     private void eatIdentifier() throws Exception {
         String tokenVal = getTokenVal();
         eat(tokenVal , JackToken.IDENTIFIER);
+        if(Objects.nonNull(currkind) && Objects.nonNull(currType)) {
+            symbolTable.define(tokenVal, currType, currkind);
+        }
     }
 
-    // consume a token validate and advance
+    // consume a token validate and advance (heart of the tokenizer)
     private void eat(String s, JackToken token) throws Exception {
         String tokenVal = getTokenVal();
         if(!s.equals(tokenVal)){
@@ -321,10 +350,7 @@ class CompilationEngine {
         if(!jackTokenizer.hasMoreTokens()){
             throw new Exception(String.format("Reached end of file Too Soon @ :: %s",s));
         }
-        if(token.equals(JackToken.SYMBOL))
-            writer.printf("<%s> %s </%s>\n",token.getAlias(), JackCompilerUtils.getHtml(tokenVal),token.getAlias());
-        else
-            writer.printf("<%s> %s </%s>\n",token.getAlias(),tokenVal,token.getAlias());
+        writeToken(token,tokenVal);
         advance();
     }
 
@@ -333,16 +359,37 @@ class CompilationEngine {
         throw new Exception(String.format("Mismatch expected %s got :: %s @ %s",expected,got,at));
     }
 
+
+    private void setCurrType(String type){
+        this.currType = type;
+    }
+
+    private void setCurrKind(String val) {
+        if(val==null) this.currkind = null;
+        else this.currkind = Kind.valueOf(val.toUpperCase());
+    }
+
+    private void setCurrSubroutine(String val){
+        this.currSubroutine = val;
+    }
+
     // wrapper to getTokenValue
     private String getTokenVal() {
         return jackTokenizer.getStringVal();
     }
 
     private void writeOpen(String val){
+        if(stopXmlWrites) return;
         writer.printf("<%s>\n",val);
     }
 
+    private void writeToken(JackToken token, String tokenVal){
+        if(stopXmlWrites) return;
+        writer.printf("<%s> %s </%s>\n",token.getAlias(), JackCompilerUtils.getHtml(tokenVal),token.getAlias());
+    }
+
     private void writeClose(String val){
+        if(stopXmlWrites) return;
         writer.printf("</%s>\n",val);
     }
 
@@ -356,9 +403,11 @@ class CompilationEngine {
 
     // close all streams and print the end message
     void close(String of) throws IOException {
-        System.out.println(String.format("Done writing to Output File @ : %s  :)",of));
-        writer.close();
+        if(!stopXmlWrites) {
+            System.out.printf("Done writing to Output File @ : %s  :)%n", of);
+            writer.close();
+        }
         jackTokenizer.close();
-        inputStream.close();
+        symbolTable.printClassScope();
     }
 }

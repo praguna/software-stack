@@ -19,8 +19,8 @@ class JackCompilerUtils {
     ));
 
     // method that returns html equivalent of the current symbol
-    static String getHtml(String symbol){
-        return htmlSymbols.getOrDefault(symbol,symbol);
+    static String getHtml(String token){
+        return htmlSymbols.getOrDefault(token,token);
     }
 
     // method that returns a token value in html open tag
