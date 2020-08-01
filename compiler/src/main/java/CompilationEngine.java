@@ -12,6 +12,7 @@ class CompilationEngine {
     private String currType;
     private Kind currkind;
     private String currSubroutine;
+    private String currClassName;
     private final boolean stopXmlWrites;
     CompilationEngine(FileInputStream inputStream, PrintWriter writer){
         this.writer = writer;
@@ -24,6 +25,7 @@ class CompilationEngine {
     void compileClass() throws Exception {
         writeOpen("class");
         eat("class", JackToken.KEYWORD);
+        currClassName = getTokenVal();
         eatIdentifier();
         eat("{", JackToken.SYMBOL);
         String tokenVal = getTokenVal();
@@ -34,6 +36,9 @@ class CompilationEngine {
         }
         setCurrKind(null);
         while (tokenVal.equals("constructor") || tokenVal.equals("function") || tokenVal.equals("method")){
+            if(tokenVal.equals("method")) {
+                symbolTable.define("this",currClassName,Kind.ARGUMENT);
+            }
             compileSubroutine();
             tokenVal = getTokenVal();
         }
@@ -356,7 +361,7 @@ class CompilationEngine {
 
     // wrapper to print Exception
     private void throwException(String expected, String got, String at) throws Exception {
-        throw new Exception(String.format("Mismatch expected %s got :: %s @ %s",expected,got,at));
+        throw new Exception(String.format("Mismatch expected %s got :: %s, in line :: <%s>, token :: %s",expected,got,jackTokenizer.getLocation(),at));
     }
 
 

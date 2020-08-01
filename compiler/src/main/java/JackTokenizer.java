@@ -11,9 +11,13 @@ class JackTokenizer {
     // These two variables are null, null if token is absent or skipped in advance, otherwise contain token value and token type
     private String currTokenValue;
     private JackToken currTokenType;
+    private int rowNum;
+    private int charNum;
     // initialize the stream
     JackTokenizer(InputStream inputStream){
         this.inputStream = new BufferedInputStream(inputStream);
+        rowNum = 1;
+        charNum = 1;
     }
 
     // Any remaining tokens left
@@ -174,9 +178,17 @@ class JackTokenizer {
         return (char)ptr;
     }
 
-    // return the next character of te stream
+    // return the next character of the stream
     private char getNextChar() throws IOException {
-        if(hasMoreTokens()) ptr = inputStream.read();
+        if(hasMoreTokens()){
+            ptr = inputStream.read();
+            if((char) ptr == '\n') {
+                ++rowNum;
+                charNum = 1;
+            }else {
+                ++charNum;
+            }
+        }
         return (char)ptr;
     }
 
@@ -249,6 +261,21 @@ class JackTokenizer {
     // Return Symbol value of current token
     char getSymbol(){
         return getCurrChar();
+    }
+
+    // Return current line number
+    int getRowNum(){
+        return rowNum;
+    }
+
+    // Return current character position in the row
+    int getCharNum(){
+        return charNum;
+    }
+
+    // Return row and char position
+    String getLocation(){
+        return String.format("%d:%d",getRowNum(),getCharNum());
     }
 
     // set token value and token type
