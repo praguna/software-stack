@@ -33,11 +33,11 @@ public class VMWriter {
     }
 
     void writeCall(String name, int nArgs){
-        this.writer.printf("call %s %d",name,nArgs);
+        this.writer.printf("call %s %d\n",name,nArgs);
     }
 
     void writeFunction(String name, int nLocals){
-        this.writer.printf("function %s %d",name,nLocals);
+        this.writer.printf("function %s %d\n",name,nLocals);
     }
 
     void writeReturn(){

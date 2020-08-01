@@ -13,6 +13,7 @@ class CompilationEngine {
     private String currType;
     private Kind currkind;
     private String currSubroutine;
+    private String currSubroutineType;
     private String currClassName;
     CompilationEngine(FileInputStream inputStream, PrintWriter writer){
         this.writer = writer;
@@ -69,12 +70,13 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         eat(tokenVal, JackToken.KEYWORD);
         tokenVal = getTokenVal();
+        setCurrSubroutineType(tokenVal);
         if(tokenVal.equals("void")){
             eat(tokenVal, JackToken.KEYWORD);
         }else{
             eatType();
         }
-        setCurrSubroutine(getTokenVal());
+        setCurrSubroutine(JackCompilerUtils.getVMName(currClassName,getTokenVal()));
         eatIdentifier();
         eat("(", JackToken.SYMBOL);
         if(!getTokenVal().equals(")")) {
@@ -89,11 +91,15 @@ class CompilationEngine {
     void compileSubroutineBody() throws Exception {
         eat("{", JackToken.SYMBOL);
         String tokenVal = getTokenVal();
+        int nLocal = 0;
         while(tokenVal.equals("var")) {
             compileVarDec();
             tokenVal = getTokenVal();
+            ++nLocal;
         }
+        vmWriter.writeFunction(currSubroutine, nLocal);
         compileStatements();
+        vmWriter.writeReturn();
         eat("}", JackToken.SYMBOL);
     }
 
@@ -109,7 +115,6 @@ class CompilationEngine {
             setCurrType(getTokenVal());
             eatType();
             eatIdentifier();
-            setCurrType(null);
             tokenVal = getTokenVal();
         }
         setCurrType(null);
@@ -153,16 +158,21 @@ class CompilationEngine {
     // Below methods compile statements
     void compileDo() throws Exception {
         eat("do", JackToken.KEYWORD);
+        String funcName = getTokenVal();
         eatIdentifier();
         String tokenVal = getTokenVal();
         if(tokenVal.equals(".")) {
             eat(".", JackToken.SYMBOL);
+            funcName+="."+getTokenVal();
             eatIdentifier();
+        }else{
+            funcName = JackCompilerUtils.getVMName(currClassName,funcName);
         }
         eat("(", JackToken.SYMBOL);
         compileExpressionList();
         eat(")", JackToken.SYMBOL);
         eat(";", JackToken.SYMBOL);
+        vmWriter.writeCall(funcName,1);
     }
 
     void compileLet() throws Exception {
@@ -339,6 +349,10 @@ class CompilationEngine {
         this.currSubroutine = val;
     }
 
+    private void setCurrSubroutineType(String type) {
+        this.currSubroutineType = type;
+    }
+
     // wrapper to getTokenValue
     private String getTokenVal() {
         return jackTokenizer.getStringVal();
@@ -357,6 +371,7 @@ class CompilationEngine {
         vmWriter.close();
         jackTokenizer.close();
         symbolTable.printClassScope(currClassName);
+        symbolTable.reset();
         System.out.printf("Done writing to Output File @ : %s  :)%n", of);
     }
 }

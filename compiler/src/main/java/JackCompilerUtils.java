@@ -33,11 +33,15 @@ class JackCompilerUtils {
         return operators.contains(tokenVal);
     }
 
-    public static boolean isStatement(String tokenVal) {
+    static boolean isStatement(String tokenVal) {
         return statementPrefix.contains(tokenVal);
     }
 
-    public static boolean isUnary(String tokenVal) {
+    static boolean isUnary(String tokenVal) {
         return tokenVal.equals("~") || tokenVal.equals("-");
+    }
+
+    static String getVMName(String className, String methodName){
+        return className+"."+methodName;
     }
 }
