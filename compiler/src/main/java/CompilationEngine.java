@@ -326,7 +326,7 @@ class CompilationEngine {
         throw new Exception(String.format("Mismatch expected %s got :: %s, in line :: <%s>, token :: %s",expected,got,jackTokenizer.getLocation(),at));
     }
 
-
+    // Setters for some useful variables
     private void setCurrType(String type){
         this.currType = type;
     }

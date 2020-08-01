@@ -9,19 +9,24 @@ enum Kind {
 public class SymbolTable {
 
     // Scope Tables
-    HashMap<String,Details> classScope;
-    HashMap<Kind, Integer> kindCount;
-    HashMap<String,Details> subroutineScope;
+    private HashMap<String,Details> classScope;
+    private HashMap<Kind, Integer> kindCount;
+    private HashMap<String,Details> subroutineScope;
+    private boolean shouldPrint;
+
 
     SymbolTable(){
         classScope = new HashMap<>();
         subroutineScope = new HashMap<>();
         kindCount = new HashMap<>();
+        shouldPrint = true;
     }
 
     void resetSubroutine(String name){
-        System.out.printf("****************** SUBROUTINE SCOPE %s *******************\n\n",name);
-        printEntries(subroutineScope);
+        if(shouldPrint) {
+            System.out.printf("****************** SUBROUTINE SCOPE %s *******************\n\n", name);
+            printEntries(subroutineScope);
+        }
         subroutineScope.clear();
         kindCount.clear();
     }
@@ -76,6 +81,7 @@ public class SymbolTable {
 
     // print the table
     void printClassScope(String className){
+        if(!shouldPrint) return;
         System.out.printf("******************* CLASS SCOPE %s **************************\n\n",className);
         printEntries(classScope);
     }
