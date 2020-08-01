@@ -75,8 +75,8 @@ public class SymbolTable {
     }
 
     // print the table
-    void printClassScope(){
-        System.out.println("******************* CLASS SCOPE **************************\n");
+    void printClassScope(String className){
+        System.out.printf("******************* CLASS SCOPE %s **************************\n\n",className);
         printEntries(classScope);
     }
 

@@ -413,6 +413,6 @@ class CompilationEngine {
             writer.close();
         }
         jackTokenizer.close();
-        symbolTable.printClassScope();
+        symbolTable.printClassScope(currClassName);
     }
 }
