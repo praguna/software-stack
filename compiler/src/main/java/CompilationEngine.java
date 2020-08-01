@@ -317,9 +317,6 @@ class CompilationEngine {
         if(!getTokenType().equals(token)){
             throwException("<type>"+token.getAlias(),"<type>"+getTokenType().getAlias(),tokenVal);
         }
-        if(!jackTokenizer.hasMoreTokens()){
-            throw new Exception(String.format("Reached end of file Too Soon @ :: %s",s));
-        }
         advance();
     }
 
