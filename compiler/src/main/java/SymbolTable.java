@@ -9,10 +9,10 @@ enum Kind {
 public class SymbolTable {
 
     // Scope Tables
-    private HashMap<String,Details> classScope;
-    private HashMap<Kind, Integer> kindCount;
-    private HashMap<String,Details> subroutineScope;
-    private boolean shouldPrint;
+    private final HashMap<String,Details> classScope;
+    private final HashMap<Kind, Integer> kindCount;
+    private final HashMap<String,Details> subroutineScope;
+    private final boolean shouldPrint;
 
 
     SymbolTable(){
@@ -101,9 +101,9 @@ public class SymbolTable {
 
     // model class to store entry details
     private static class Details{
-        private int index;
-        private Kind kind;
-        private String dataType;
+        private final int index;
+        private final Kind kind;
+        private final String dataType;
         public Details(Kind varType, String dataType, int num){
             this.dataType = dataType;
             this.kind = varType;

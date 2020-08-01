@@ -21,8 +21,8 @@ public class JackCompiler {
         FileInputStream fileInputStream = new FileInputStream(inputPath);
         String of = getOutputPath(inputPath);
         System.out.println("Compiling Jack file@::"+inputPath);
-//        PrintWriter writer = new PrintWriter(of);
-        CompilationEngine compilationEngine = new CompilationEngine(fileInputStream, null);
+        PrintWriter writer = new PrintWriter(of);
+        CompilationEngine compilationEngine = new CompilationEngine(fileInputStream, writer);
         compilationEngine.compileSyntaxAnalyzer();
         compilationEngine.close(of);
     }

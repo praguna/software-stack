@@ -9,12 +9,14 @@ class CompilationEngine {
     private final JackTokenizer jackTokenizer;
     private final PrintWriter writer;
     private final SymbolTable symbolTable;
+    private final VMWriter vmWriter;
     private String currType;
     private Kind currkind;
     private String currSubroutine;
     private String currClassName;
     CompilationEngine(FileInputStream inputStream, PrintWriter writer){
         this.writer = writer;
+        this.vmWriter = new VMWriter(writer);
         this.jackTokenizer = new JackTokenizer(inputStream);
         this.symbolTable = new SymbolTable();
     }
@@ -355,9 +357,9 @@ class CompilationEngine {
 
     // close all streams and print the end message
     void close(String of) throws IOException {
-//        System.out.printf("Done writing to Output File @ : %s  :)%n", of);
-//        writer.close();
+        vmWriter.close();
         jackTokenizer.close();
         symbolTable.printClassScope(currClassName);
+        System.out.printf("Done writing to Output File @ : %s  :)%n", of);
     }
 }
