@@ -88,6 +88,7 @@ class CompilationEngine {
         setCurrSubroutine(null);
     }
 
+    // subroutine body is compiled and code is generated for methods
     void compileSubroutineBody() throws Exception {
         eat("{", JackToken.SYMBOL);
         String tokenVal = getTokenVal();
@@ -114,7 +115,7 @@ class CompilationEngine {
         eat("}", JackToken.SYMBOL);
     }
 
-
+    // symbol table is updated
     void compileParameterList() throws Exception {
         setCurrKind("argument");
         setCurrType(getTokenVal());
@@ -132,6 +133,7 @@ class CompilationEngine {
         setCurrKind(null);
     }
 
+    // symbol table is updated
     int compileVarDec() throws Exception {
         int varCount = 1;
         setCurrKind("var");
@@ -152,6 +154,7 @@ class CompilationEngine {
         return varCount;
     }
 
+    // organizes various types of statements
     void compileStatements() throws Exception {
         String tokenVal = getTokenVal();
         if(!JackCompilerUtils.isStatement(tokenVal)){
@@ -180,6 +183,7 @@ class CompilationEngine {
         eat(";", JackToken.SYMBOL);
     }
 
+    // Handles assignment
     void compileLet() throws Exception {
         eat("let", JackToken.KEYWORD);
         String varName = getTokenVal();
@@ -250,6 +254,7 @@ class CompilationEngine {
 
     }
 
+    // return checking included
     void compileReturn() throws Exception {
         eat("return", JackToken.KEYWORD);
         if(!getTokenVal().equals(";")) {
@@ -261,6 +266,7 @@ class CompilationEngine {
         eat(";", JackToken.SYMBOL);
     }
 
+    // expression := term (op term)*
     void compileExpression() throws Exception {
         compileTerm();
         String tokenVal = getTokenVal();

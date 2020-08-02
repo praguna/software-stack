@@ -1,3 +1,4 @@
+// List of all JackKeywords
 enum JackKeyword {
     CLASS,
     METHOD,
@@ -35,13 +36,4 @@ enum JackKeyword {
         return keyword.equals(INT) || keyword.equals(BOOLEAN) || keyword.equals(CHAR);
     }
 
-    public static int getKeywordValue(String tokenVal){
-        JackKeyword k = JackKeyword.valueOf(tokenVal.toUpperCase());
-        return switch (k) {
-            case TRUE -> -1;
-            case FALSE -> 0;
-            case NULL -> 0;
-            default -> 0;
-        };
-    }
 }

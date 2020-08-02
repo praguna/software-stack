@@ -9,14 +9,16 @@ import java.util.stream.Stream;
 /*
     Main Class
     input : directory of jack files
-    output : xml files of all files representing parse trees
+    output : VM compiled files
 */
 public class JackCompiler {
+    // obtain output path in the inputted path
     private static String getOutputPath(String inputPath){
         int e = inputPath.indexOf(".jack");
         return inputPath.substring(0, e).concat(".vm");
     }
 
+    // generates code in the directory
     private static void generateFileCode(String inputPath, SymbolTable symbolTable) throws Exception {
         FileInputStream fileInputStream = new FileInputStream(inputPath);
         String of = getOutputPath(inputPath);
@@ -27,6 +29,7 @@ public class JackCompiler {
         compilationEngine.close(of);
     }
 
+    // stating point of the application
     public static void main(String[] args) throws Exception {
         if(args.length == 0){
             System.err.println("Expected Input file name or directory");

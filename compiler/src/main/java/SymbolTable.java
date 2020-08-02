@@ -16,16 +16,18 @@ public class SymbolTable {
     private int whileIndex;
     private int ifIndex;
 
-
+    // Singleton Initialization
     SymbolTable(){
         classScope = new HashMap<>();
         subroutineScope = new HashMap<>();
         kindCount = new HashMap<>();
-        shouldPrint = false;
+        shouldPrint = false; // set true to print symbol table
+        // for unique while and if statements
         whileIndex = 0;
         ifIndex = 0;
     }
 
+    // subroutine is closed
     void resetSubroutine(String name){
         if(shouldPrint) {
             System.out.printf("****************** SUBROUTINE SCOPE %s *******************\n\n", name);
@@ -36,11 +38,13 @@ public class SymbolTable {
         kindCount.put(Kind.VAR,0);
     }
 
+    // class is closed
     void reset(){
         subroutineScope.clear();
         removeNonStatic();
     }
 
+    // only static entries preserved
     private void removeNonStatic() {
         kindCount.entrySet().removeIf(entry->!entry.getKey().equals(Kind.STATIC));
         classScope.entrySet().removeIf(entry->!entry.getValue().getKind().equals(Kind.STATIC));
@@ -69,10 +73,12 @@ public class SymbolTable {
         return getDetailByName(name).getKind();
     }
 
+    // returns datatype
     String typeOf(String name){
         return getDetailByName(name).getDataType();
     }
 
+    // returns segment index
     int indexOf(String name){
         VarDetails detail = getDetailByName(name);
         if(Objects.isNull(detail)) return -1;

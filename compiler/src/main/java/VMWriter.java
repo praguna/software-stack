@@ -1,5 +1,6 @@
 import java.io.PrintWriter;
 
+// A very simple class to write VM commands directly to the compiled file
 public class VMWriter {
 
     private PrintWriter writer;
