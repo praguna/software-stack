@@ -163,7 +163,7 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         if(tokenVal.equals(".")) {
             eat(".", JackToken.SYMBOL);
-            funcName+="."+getTokenVal();
+            funcName=JackCompilerUtils.getVMName(funcName,getTokenVal());
             eatIdentifier();
         }else{
             funcName = JackCompilerUtils.getVMName(currClassName,funcName);
@@ -194,51 +194,55 @@ class CompilationEngine {
 
     void compileWhile() throws Exception {
         int index = symbolTable.getWhileIndex();
-        vmWriter.writeLabel(String.format("while_start_%d",index));
+        vmWriter.writeLabel(String.format("%s.while_start_%d",currClassName,index));
         eat("while", JackToken.KEYWORD);
         eat("(", JackToken.SYMBOL);
         compileExpression();
         eat(")", JackToken.SYMBOL);
         vmWriter.writeArithmetic(Command.NOT);
-        vmWriter.writeIf(String.format("while_end_%d",index));
+        vmWriter.writeIf(String.format("%s.while_end_%d",currClassName,index));
         eat("{", JackToken.SYMBOL);
         compileStatements();
         eat("}", JackToken.SYMBOL);
-        vmWriter.writeGoto(String.format("while_start_%d",index));
-        vmWriter.writeLabel(String.format("while_end_%d",index));
+        vmWriter.writeGoto(String.format("%s.while_start_%d",currClassName,index));
+        vmWriter.writeLabel(String.format("%s.while_end_%d",currClassName,index));
     }
 
     void compileIf() throws Exception {
         int index = symbolTable.getIfIndex();
-        vmWriter.writeLabel(String.format("if_stmt_%d",index));
+        vmWriter.writeLabel(String.format("%s.if_stmt_%d",currClassName,index));
         eat("if", JackToken.KEYWORD);
         eat("(", JackToken.SYMBOL);
         compileExpression();
         eat(")", JackToken.SYMBOL);
         vmWriter.writeArithmetic(Command.NOT);
-        vmWriter.writeIf(String.format("if_end_%d",index));
+        vmWriter.writeIf(String.format("%s.if_end_%d",currClassName,index));
         eat("{", JackToken.SYMBOL);
         compileStatements();
         eat("}", JackToken.SYMBOL);
         String tokenVal =  getTokenVal();
         if(tokenVal.equals("else")){
-            vmWriter.writeGoto(String.format("if_else_end_%d",index));
-            vmWriter.writeLabel(String.format("if_end_%d",index));
+            vmWriter.writeGoto(String.format("%s.if_else_end_%d",currClassName,index));
+            vmWriter.writeLabel(String.format("%s.if_end_%d",currClassName,index));
             eat("else", JackToken.KEYWORD);
             eat("{", JackToken.SYMBOL);
             compileStatements();
             eat("}", JackToken.SYMBOL);
-            vmWriter.writeLabel(String.format("if_else_end_%d",index));
+            vmWriter.writeLabel(String.format("%s.if_else_end_%d",currClassName,index));
             return;
         }
-        vmWriter.writeLabel(String.format("if_end_%d",index));
+        vmWriter.writeLabel(String.format("%s.if_end_%d",currClassName,index));
 
     }
 
     void compileReturn() throws Exception {
         eat("return", JackToken.KEYWORD);
-        if(!getTokenVal().equals(";"))
+        if(!getTokenVal().equals(";")) {
             compileExpression();
+        }else{
+            if(!currSubroutineType.equals("void"))
+                throwException(String.format("Subroutine %s is expected to return type %s",currSubroutine,currSubroutineType));
+        }
         eat(";", JackToken.SYMBOL);
     }
 
@@ -278,9 +282,7 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         JackToken tokenType = getTokenType();
         if(JackCompilerUtils.isConstant(tokenType)) {
-            if (tokenType == JackToken.INT_CONST) {
-                vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
-            }
+            writeValues();
             eat(tokenVal, tokenType);
             return;
         }
@@ -299,21 +301,26 @@ class CompilationEngine {
         String idf = getTokenVal();
         eatIdentifier();
         tokenVal = getTokenVal();
+        // arrays
         if(tokenVal.equals("[")){
             eat("[", JackToken.SYMBOL);
             compileExpression();
             eat("]", JackToken.SYMBOL);
             return;
         }
-        // sub routine body checker
+        // sub routine call
         if (tokenVal.equals(".") || tokenVal.equals("(")) {
             if(tokenVal.equals(".")) {
                 eat(".", JackToken.SYMBOL);
+                idf= JackCompilerUtils.getVMName(idf,getTokenVal());
                 eatIdentifier();
+            }else{
+                idf = JackCompilerUtils.getVMName(currClassName,idf);
             }
             eat("(", JackToken.SYMBOL);
-            compileExpressionList();
+            int nArgs = compileExpressionList();
             eat(")", JackToken.SYMBOL);
+            vmWriter.writeCall(idf,nArgs);
             return;
         }
         writePut(idf);
@@ -353,6 +360,17 @@ class CompilationEngine {
         Kind kind = symbolTable.kindOf(varName);
         if(Objects.isNull(kind)) throwException(String.format("Could not find %s ", varName));
         return kind;
+    }
+
+    // push constant values of term
+    private void writeValues() {
+        JackToken tokenType = getTokenType();
+        if (tokenType == JackToken.INT_CONST) {
+            vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
+        }else if(tokenType == JackToken.KEYWORD){
+            int value =JackKeyword.getKeywordValue(getTokenVal());
+            vmWriter.writePush(Segment.CONST,value);
+        }
     }
 
     // returns current token type
