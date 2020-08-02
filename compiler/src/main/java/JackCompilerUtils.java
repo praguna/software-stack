@@ -5,17 +5,17 @@ import java.util.Map;
 
 class JackCompilerUtils {
     // map used for html symbolization
-    private static Map<String,String> htmlSymbols = Map.ofEntries(
+    private static final Map<String,String> htmlSymbols = Map.ofEntries(
             Map.entry("&","&amp;"),
             Map.entry("<","&lt;"),
             Map.entry(">","&gt;")
     );
 
-    private static HashSet<String> operators = new HashSet<>(Arrays.asList(
+    private static final HashSet<String> operators = new HashSet<>(Arrays.asList(
         "+","-","*","/","&","|","<",">","~","="
     ));
 
-    private static Map<String, Command> operatorCommandMap= Map.ofEntries(
+    private static final Map<String, Command> operatorCommandMap= Map.ofEntries(
       Map.entry("+",Command.ADD),
       Map.entry("-",Command.SUB),
       Map.entry("&",Command.AND),
@@ -27,7 +27,7 @@ class JackCompilerUtils {
       Map.entry("|",Command.OR)
     );
 
-    private static HashSet<String> statementPrefix = new HashSet<>(Arrays.asList(
+    private static final HashSet<String> statementPrefix = new HashSet<>(Arrays.asList(
        "do", "let", "while", "if", "return"
     ));
 

@@ -289,7 +289,7 @@ class CompilationEngine {
         else if(JackCompilerUtils.isUnary(tokenVal)){
             eat(tokenVal, JackToken.SYMBOL);
             compileTerm();
-            writeOperation("u-");
+            writeOperation("u"+tokenVal);
             return;
         }
         else if(tokenVal.equals("(")){
@@ -368,8 +368,10 @@ class CompilationEngine {
         if (tokenType == JackToken.INT_CONST) {
             vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
         }else if(tokenType == JackToken.KEYWORD){
-            int value =JackKeyword.getKeywordValue(getTokenVal());
-            vmWriter.writePush(Segment.CONST,value);
+            vmWriter.writePush(Segment.CONST,0);
+            if (JackKeyword.valueOf(getTokenVal().toUpperCase()) == JackKeyword.TRUE){
+                   vmWriter.writeArithmetic(Command.NOT);
+            }
         }
     }
 
