@@ -1,3 +1,4 @@
+// defines all possible segments in hack machine
 enum Segment {
     CONST("constant"),
     ARG("argument"),

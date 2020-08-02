@@ -238,16 +238,6 @@ class JackTokenizer {
         return sb.toString();
     }
 
-    // Return the keyword if current token is keyword
-    JackKeyword getKeyword(){
-        return JackKeyword.valueOf(currTokenValue.toUpperCase());
-    }
-
-    // Return the identifier for current token
-    String getIdentifier(){
-        return currTokenValue;
-    }
-
     // Return IntVal for the current token
     int getIntVal(){
         return Integer.parseInt(currTokenValue);
@@ -256,11 +246,6 @@ class JackTokenizer {
     // Return StringVal of the current token
     String getStringVal(){
         return currTokenValue;
-    }
-
-    // Return Symbol value of current token
-    char getSymbol(){
-        return getCurrChar();
     }
 
     // Return current line number

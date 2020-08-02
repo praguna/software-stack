@@ -5,13 +5,17 @@ import java.util.Objects;
 enum Kind {
     STATIC,FIELD,ARGUMENT,VAR
 }
-
+/*
+    Symbol Table:
+        Maintains a set of hash maps containing vm details of variables
+        Helps in resolution and collision
+ */
 public class SymbolTable {
 
     // Scope Tables
-    private final HashMap<String, VarDetails> classScope;
-    private final HashMap<Kind, Integer> kindCount;
-    private final HashMap<String, VarDetails> subroutineScope;
+    private final HashMap<String, VarDetails> classScope; // stores class variable details
+    private final HashMap<Kind, Integer> kindCount; // stores count of all variables of different types
+    private final HashMap<String, VarDetails> subroutineScope; // stores subroutine variable details
     private final boolean shouldPrint;
     private int whileIndex;
     private int ifIndex;

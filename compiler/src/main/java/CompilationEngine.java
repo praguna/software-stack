@@ -3,7 +3,9 @@ import java.util.Objects;
 
 /*
     Handles Jack Grammar
-    Implementation : Top down Recursion, LL(2) Parser
+    Implementation : Top down Recursion, LL(2) Parser, compiler
+    It is the heart of JackCompiler
+    Uses Grammar as is from Nandtotetris
  */
 class CompilationEngine {
     private final JackTokenizer jackTokenizer;
@@ -211,6 +213,7 @@ class CompilationEngine {
         writeStore(varName);
     }
 
+    // generation of unique labels added
     void compileWhile() throws Exception {
         int index = symbolTable.getWhileIndex();
         vmWriter.writeLabel(String.format("%s.while_start_%d",currClassName,index));
@@ -227,6 +230,7 @@ class CompilationEngine {
         vmWriter.writeLabel(String.format("%s.while_end_%d",currClassName,index));
     }
 
+    // generation of unique labels and optional else is used
     void compileIf() throws Exception {
         int index = symbolTable.getIfIndex();
         vmWriter.writeLabel(String.format("%s.if_stmt_%d",currClassName,index));
@@ -298,7 +302,7 @@ class CompilationEngine {
         return nArgs;
     }
 
-    // usage of LL(2) parsing
+    // usage of LL(2) parsing, identification and processing of terms
     void compileTerm() throws Exception {
         String tokenVal = getTokenVal();
         JackToken tokenType = getTokenType();
@@ -397,7 +401,7 @@ class CompilationEngine {
         vmWriter.writePush(Objects.requireNonNull(segment),getIndex(varName));
     }
 
-    //look up variable in the symbol table
+    //look up variable in the symbol table, collision is handled for static type
     private Kind lookup(String varName) throws Exception {
         String staticName = JackCompilerUtils.getVMName(currClassName,varName);
         Kind kind = symbolTable.kindOf(staticName);
