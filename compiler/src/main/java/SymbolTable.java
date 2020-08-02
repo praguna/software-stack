@@ -32,13 +32,18 @@ public class SymbolTable {
             printEntries(subroutineScope);
         }
         subroutineScope.clear();
-        kindCount.clear();
+        kindCount.put(Kind.ARGUMENT,0);
+        kindCount.put(Kind.VAR,0);
     }
 
     void reset(){
         subroutineScope.clear();
-        classScope.clear();
-        kindCount.clear();
+        removeNonStatic();
+    }
+
+    private void removeNonStatic() {
+        kindCount.entrySet().removeIf(entry->!entry.getKey().equals(Kind.STATIC));
+        classScope.entrySet().removeIf(entry->!entry.getValue().getKind().equals(Kind.STATIC));
     }
 
     // add entry to symbol table
@@ -67,8 +72,11 @@ public class SymbolTable {
     String typeOf(String name){
         return getDetailByName(name).getDataType();
     }
+
     int indexOf(String name){
-        return getDetailByName(name).getIndex();
+        VarDetails detail = getDetailByName(name);
+        if(Objects.isNull(detail)) return -1;
+        return detail.getIndex();
     }
 
     // search in the table for the variable

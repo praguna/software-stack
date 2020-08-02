@@ -17,12 +17,12 @@ public class JackCompiler {
         return inputPath.substring(0, e).concat(".vm");
     }
 
-    private static void generateFileCode(String inputPath) throws Exception {
+    private static void generateFileCode(String inputPath, SymbolTable symbolTable) throws Exception {
         FileInputStream fileInputStream = new FileInputStream(inputPath);
         String of = getOutputPath(inputPath);
         System.out.println("Compiling Jack file@::"+inputPath);
         PrintWriter writer = new PrintWriter(of);
-        CompilationEngine compilationEngine = new CompilationEngine(fileInputStream, writer);
+        CompilationEngine compilationEngine = new CompilationEngine(symbolTable,fileInputStream, writer);
         compilationEngine.compileSyntaxAnalyzer();
         compilationEngine.close(of);
     }
@@ -34,13 +34,14 @@ public class JackCompiler {
         }
         String inputPath = args[0];
         File file = new File(inputPath);
+        SymbolTable symbolTable = new SymbolTable();
         if (file.isFile()){
-            generateFileCode(inputPath);
+            generateFileCode(inputPath, symbolTable);
         }else if(file.isDirectory()){
             Stream<Path> walk =  Files.walk(Paths.get(inputPath));
             List<String> files = walk.map(Path::toString).filter(x->x.endsWith("jack")).collect(Collectors.toList());
             for(String filePath : files){
-                JackCompiler.generateFileCode(filePath);
+                JackCompiler.generateFileCode(filePath, symbolTable);
             }
          }
         }

@@ -12,12 +12,13 @@ class CompilationEngine {
     private String currType;
     private Kind currkind;
     private String currSubroutine;
-    private String currSubroutineType;
+    private String currSubroutineRtrType;
+    private String currSubRoutineType;
     private String currClassName;
-    CompilationEngine(FileInputStream inputStream, PrintWriter writer){
+    CompilationEngine(SymbolTable symbolTable,FileInputStream inputStream, PrintWriter writer){
         this.vmWriter = new VMWriter(writer);
         this.jackTokenizer = new JackTokenizer(inputStream);
-        this.symbolTable = new SymbolTable();
+        this.symbolTable = symbolTable;
     }
 
     // compile class NT
@@ -66,9 +67,10 @@ class CompilationEngine {
     // The below functions compile a method, function or constructor, parameter list, variable Declaration
     void compileSubroutine() throws Exception {
         String tokenVal = getTokenVal();
+        setCurrSubroutineType(tokenVal);
         eat(tokenVal, JackToken.KEYWORD);
         tokenVal = getTokenVal();
-        setCurrSubroutineType(tokenVal);
+        setCurrSubroutineRtrType(tokenVal);
         if(tokenVal.equals("void")){
             eat(tokenVal, JackToken.KEYWORD);
         }else{
@@ -95,7 +97,19 @@ class CompilationEngine {
             tokenVal = getTokenVal();
         }
         vmWriter.writeFunction(currSubroutine, nLocal);
+        if(currSubRoutineType.equals("constructor")){
+            vmWriter.writePush(Segment.CONST,symbolTable.varCount(Kind.FIELD));
+            vmWriter.writeCall("Memory.alloc",1);
+            vmWriter.writePop(Segment.PTR,0);
+        }
+        if(currSubRoutineType.equals("method")){
+            vmWriter.writePush(Segment.ARG,0);
+            vmWriter.writePop(Segment.PTR,0);
+        }
         compileStatements();
+        if(currSubRoutineType.equals("constructor")){
+            vmWriter.writePush(Segment.PTR,0);
+        }
         vmWriter.writeReturn();
         eat("}", JackToken.SYMBOL);
     }
@@ -161,19 +175,9 @@ class CompilationEngine {
         String funcName = getTokenVal();
         eatIdentifier();
         String tokenVal = getTokenVal();
-        if(tokenVal.equals(".")) {
-            eat(".", JackToken.SYMBOL);
-            funcName=JackCompilerUtils.getVMName(funcName,getTokenVal());
-            eatIdentifier();
-        }else{
-            funcName = JackCompilerUtils.getVMName(currClassName,funcName);
-        }
-        eat("(", JackToken.SYMBOL);
-        int nArgs = compileExpressionList();
-        eat(")", JackToken.SYMBOL);
-        eat(";", JackToken.SYMBOL);
-        vmWriter.writeCall(funcName,nArgs);
+        subroutineCall(funcName,tokenVal);
         vmWriter.writePop(Segment.TEMP,0);
+        eat(";", JackToken.SYMBOL);
     }
 
     void compileLet() throws Exception {
@@ -240,8 +244,8 @@ class CompilationEngine {
         if(!getTokenVal().equals(";")) {
             compileExpression();
         }else{
-            if(!currSubroutineType.equals("void"))
-                throwException(String.format("Subroutine %s is expected to return type %s",currSubroutine,currSubroutineType));
+            if(!currSubroutineRtrType.equals("void"))
+                throwException(String.format("Subroutine %s is expected to return type %s",currSubroutine, currSubroutineRtrType));
         }
         eat(";", JackToken.SYMBOL);
     }
@@ -310,20 +314,37 @@ class CompilationEngine {
         }
         // sub routine call
         if (tokenVal.equals(".") || tokenVal.equals("(")) {
-            if(tokenVal.equals(".")) {
-                eat(".", JackToken.SYMBOL);
-                idf= JackCompilerUtils.getVMName(idf,getTokenVal());
-                eatIdentifier();
-            }else{
-                idf = JackCompilerUtils.getVMName(currClassName,idf);
-            }
-            eat("(", JackToken.SYMBOL);
-            int nArgs = compileExpressionList();
-            eat(")", JackToken.SYMBOL);
-            vmWriter.writeCall(idf,nArgs);
+            subroutineCall(idf,tokenVal);
             return;
         }
         writePut(idf);
+    }
+
+    // handles call from do and expressions
+    void subroutineCall(String idf, String tokenVal) throws Exception {
+        int nArgs = 0;
+        if(tokenVal.equals(".")) {
+            eat(".", JackToken.SYMBOL);
+            try{
+                writePut(idf);
+                ++nArgs;
+                idf=JackCompilerUtils.getVMName(symbolTable.typeOf(idf),getTokenVal());
+            }
+            catch (Exception ignored){
+                idf=JackCompilerUtils.getVMName(idf,getTokenVal());
+            }
+            eatIdentifier();
+        }else{
+            if(currSubRoutineType.equals("function"))
+                throwException(String.format("Non static member called in static function %s",currSubroutine));
+            ++nArgs;
+            vmWriter.writePush(Segment.PTR, 0);
+            idf = JackCompilerUtils.getVMName(currClassName,idf);
+        }
+        eat("(", JackToken.SYMBOL);
+        nArgs+=compileExpressionList();
+        eat(")", JackToken.SYMBOL);
+        vmWriter.writeCall(idf,nArgs);
     }
 
     // complete syntax Analyzer process
@@ -346,20 +367,33 @@ class CompilationEngine {
     //wrapper for pop operation into a segment
     private void writeStore(String varName) throws Exception {
         Segment segment = JackCompilerUtils.getSegment(lookup(varName));
-        vmWriter.writePop(Objects.requireNonNull(segment),symbolTable.indexOf(varName));
+        vmWriter.writePop(Objects.requireNonNull(segment),getIndex(varName));
     }
 
-    // wrapper for push operation into stack
+    // wrapper for push variable into stack
     private void writePut(String varName) throws Exception{
         Segment segment = JackCompilerUtils.getSegment(lookup((varName)));
-        vmWriter.writePush(Objects.requireNonNull(segment),symbolTable.indexOf(varName));
+        vmWriter.writePush(Objects.requireNonNull(segment),getIndex(varName));
     }
 
     //look up variable in the symbol table
     private Kind lookup(String varName) throws Exception {
-        Kind kind = symbolTable.kindOf(varName);
+        String staticName = JackCompilerUtils.getVMName(currClassName,varName);
+        Kind kind = symbolTable.kindOf(staticName);
+        if(Objects.nonNull(kind)) return kind;
+        kind = symbolTable.kindOf(varName);
+        if(currSubRoutineType.equals("function") && kind.equals(Kind.FIELD))
+            throwException(String.format("Static function %s cannot not access member variable %s",currSubroutine,varName));
         if(Objects.isNull(kind)) throwException(String.format("Could not find %s ", varName));
         return kind;
+    }
+
+    // wrapper of symbol table index
+    private int getIndex(String varName){
+        String staticName = JackCompilerUtils.getVMName(currClassName,varName);
+        int index = symbolTable.indexOf(staticName);
+        if(index != -1) return index;
+        return symbolTable.indexOf(varName);
     }
 
     // push constant values of term
@@ -368,9 +402,13 @@ class CompilationEngine {
         if (tokenType == JackToken.INT_CONST) {
             vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
         }else if(tokenType == JackToken.KEYWORD){
-            vmWriter.writePush(Segment.CONST,0);
-            if (JackKeyword.valueOf(getTokenVal().toUpperCase()) == JackKeyword.TRUE){
-                   vmWriter.writeArithmetic(Command.NOT);
+            switch (JackKeyword.valueOf(getTokenVal().toUpperCase())){
+                case THIS -> vmWriter.writePush(Segment.PTR,0);
+                case TRUE -> {
+                    vmWriter.writePush(Segment.CONST,0);
+                    vmWriter.writeArithmetic(Command.NOT);
+                }
+                default -> vmWriter.writePush(Segment.CONST,0);
             }
         }
     }
@@ -396,7 +434,8 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         eat(tokenVal , JackToken.IDENTIFIER);
         if(Objects.nonNull(currkind) && Objects.nonNull(currType)) {
-            if(Objects.nonNull(symbolTable.kindOf(tokenVal))) throwException(String.format("Symbol is a duplicate %s ", tokenVal));
+            if(Objects.nonNull(symbolTable.kindOf(tokenVal))) throwException(String.format("Symbol '%s' is a duplicate ", tokenVal));
+            if(currkind == Kind.STATIC) tokenVal = JackCompilerUtils.getVMName(currClassName,tokenVal);
             symbolTable.define(tokenVal, currType, currkind);
         }
     }
@@ -437,8 +476,12 @@ class CompilationEngine {
         this.currSubroutine = val;
     }
 
-    private void setCurrSubroutineType(String type) {
-        this.currSubroutineType = type;
+    private void setCurrSubroutineRtrType(String type) {
+        this.currSubroutineRtrType = type;
+    }
+
+    private void setCurrSubroutineType(String tokenVal) {
+        this.currSubRoutineType = tokenVal;
     }
 
     // wrapper to getTokenValue
