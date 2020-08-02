@@ -55,6 +55,8 @@ public class SymbolTable {
 
     // retrieve values
     Kind kindOf(String name){
+        VarDetails detail = getDetailByName(name);
+        if(Objects.isNull(detail)) return null;
         return getDetailByName(name).getKind();
     }
 

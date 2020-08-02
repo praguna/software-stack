@@ -61,4 +61,26 @@ class JackCompilerUtils {
     static Command getCommand(String opr){
         return operatorCommandMap.getOrDefault(opr,null);
     }
+
+    static Segment getSegment(Kind kind){
+        switch (kind){
+            case VAR -> {
+                return Segment.LOCAL;
+            }
+            case STATIC -> {
+                return Segment.STATIC;
+            }
+            case ARGUMENT -> {
+                return Segment.ARG;
+            }
+            case FIELD -> {
+                return Segment.THIS;
+            }
+        }
+        return null;
+    }
+
+    static boolean isConstant(JackToken tokenType){
+        return tokenType.equals(JackToken.INT_CONST) || tokenType.equals(JackToken.STRING_CONST)  || tokenType.equals(JackToken.KEYWORD);
+    }
 }

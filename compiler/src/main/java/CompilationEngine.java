@@ -91,9 +91,8 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         int nLocal = 0;
         while(tokenVal.equals("var")) {
-            compileVarDec();
+            nLocal+=compileVarDec();
             tokenVal = getTokenVal();
-            ++nLocal;
         }
         vmWriter.writeFunction(currSubroutine, nLocal);
         compileStatements();
@@ -119,7 +118,8 @@ class CompilationEngine {
         setCurrKind(null);
     }
 
-    void compileVarDec() throws Exception {
+    int compileVarDec() throws Exception {
+        int varCount = 1;
         setCurrKind("var");
         eat("var", JackToken.KEYWORD);
         setCurrType(getTokenVal());
@@ -130,10 +130,12 @@ class CompilationEngine {
             eat(",", JackToken.SYMBOL);
             eatIdentifier();
             tokenValue = getTokenVal();
+            ++varCount;
         }
         eat(";", JackToken.SYMBOL);
         setCurrType(null);
         setCurrKind(null);
+        return varCount;
     }
 
     void compileStatements() throws Exception {
@@ -175,6 +177,7 @@ class CompilationEngine {
 
     void compileLet() throws Exception {
         eat("let", JackToken.KEYWORD);
+        String varName = getTokenVal();
         eatIdentifier();
         String tokenVal = getTokenVal();
         if(tokenVal.equals("[")){
@@ -185,6 +188,7 @@ class CompilationEngine {
         eat("=", JackToken.SYMBOL);
         compileExpression();
         eat(";", JackToken.SYMBOL);
+        writeStore(varName);
     }
 
     void compileWhile() throws Exception {
@@ -255,15 +259,18 @@ class CompilationEngine {
     // usage of LL(2) parsing
     void compileTerm() throws Exception {
         String tokenVal = getTokenVal();
-        JackToken tokeType = getTokenType();
-        if(tokeType.equals(JackToken.INT_CONST) || tokeType.equals(JackToken.STRING_CONST)  || tokeType.equals(JackToken.KEYWORD)) {
-            writeValues(tokeType);
-            eat(tokenVal, tokeType);
+        JackToken tokenType = getTokenType();
+        if(JackCompilerUtils.isConstant(tokenType)) {
+            if (tokenType == JackToken.INT_CONST) {
+                vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
+            }
+            eat(tokenVal, tokenType);
             return;
         }
         else if(JackCompilerUtils.isUnary(tokenVal)){
             eat(tokenVal, JackToken.SYMBOL);
             compileTerm();
+            writeOperation("u-");
             return;
         }
         else if(tokenVal.equals("(")){
@@ -272,6 +279,7 @@ class CompilationEngine {
             eat(")", JackToken.SYMBOL);
             return;
         }
+        String idf = getTokenVal();
         eatIdentifier();
         tokenVal = getTokenVal();
         if(tokenVal.equals("[")){
@@ -289,21 +297,16 @@ class CompilationEngine {
             eat("(", JackToken.SYMBOL);
             compileExpressionList();
             eat(")", JackToken.SYMBOL);
+            return;
         }
+        writePut(idf);
     }
+
     // complete syntax Analyzer process
     void compileSyntaxAnalyzer() throws Exception {
         // read the first token, expected as class
         advance();
         compileClass();
-    }
-
-    // compile constants
-    void writeValues(JackToken token){
-        // have to develop this more
-        if (token == JackToken.INT_CONST) {
-            vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
-        }
     }
 
     // compile operators
@@ -316,7 +319,26 @@ class CompilationEngine {
             vmWriter.writeArithmetic(JackCompilerUtils.getCommand(tokenVal));
     }
 
+    //wrapper for pop operation into a segment
+    private void writeStore(String varName) throws Exception {
+        Segment segment = JackCompilerUtils.getSegment(lookup(varName));
+        vmWriter.writePop(Objects.requireNonNull(segment),symbolTable.indexOf(varName));
+    }
 
+    // wrapper for push operation into stack
+    private void writePut(String varName) throws Exception{
+        Segment segment = JackCompilerUtils.getSegment(lookup((varName)));
+        vmWriter.writePush(Objects.requireNonNull(segment),symbolTable.indexOf(varName));
+    }
+
+    //look up variable in the symbol table
+    private Kind lookup(String varName) throws Exception {
+        Kind kind = symbolTable.kindOf(varName);
+        if(Objects.isNull(kind)) throwException(String.format("Could not find %s ", varName));
+        return kind;
+    }
+
+    // returns current token type
     private JackToken getTokenType() {
         return jackTokenizer.getTokenType();
     }
@@ -337,6 +359,7 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         eat(tokenVal , JackToken.IDENTIFIER);
         if(Objects.nonNull(currkind) && Objects.nonNull(currType)) {
+            if(Objects.nonNull(symbolTable.kindOf(tokenVal))) throwException(String.format("Symbol is a duplicate %s ", tokenVal));
             symbolTable.define(tokenVal, currType, currkind);
         }
     }
@@ -356,6 +379,11 @@ class CompilationEngine {
     // wrapper to print Exception
     private void throwException(String expected, String got, String at) throws Exception {
         throw new Exception(String.format("Mismatch expected %s got :: %s, in line :: <%s>, token :: %s",expected,got,jackTokenizer.getLocation(),at));
+    }
+
+    //wrapper for exception
+    private void throwException(String message) throws Exception {
+        throw new Exception(String.format("Error :: %s, in line :: <%s>,",message,jackTokenizer.getLocation()));
     }
 
     // Setters for some useful variables
