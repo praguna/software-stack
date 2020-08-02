@@ -185,14 +185,25 @@ class CompilationEngine {
         String varName = getTokenVal();
         eatIdentifier();
         String tokenVal = getTokenVal();
+        boolean isArray = false;
         if(tokenVal.equals("[")){
+            writePush(varName);
             eat("[", JackToken.SYMBOL);
             compileExpression();
             eat("]", JackToken.SYMBOL);
+            vmWriter.writeArithmetic(Command.ADD);
+            isArray = true;
         }
         eat("=", JackToken.SYMBOL);
         compileExpression();
         eat(";", JackToken.SYMBOL);
+        if(isArray){
+            vmWriter.writePop(Segment.TEMP, 0);
+            vmWriter.writePop(Segment.PTR,1);
+            vmWriter.writePush(Segment.TEMP, 0);
+            vmWriter.writePop(Segment.THAT, 0);
+            return;
+        }
         writeStore(varName);
     }
 
@@ -307,9 +318,13 @@ class CompilationEngine {
         tokenVal = getTokenVal();
         // arrays
         if(tokenVal.equals("[")){
+            writePush(idf);
             eat("[", JackToken.SYMBOL);
             compileExpression();
             eat("]", JackToken.SYMBOL);
+            vmWriter.writeArithmetic(Command.ADD);
+            vmWriter.writePop(Segment.PTR,1);
+            vmWriter.writePush(Segment.THAT, 0);
             return;
         }
         // sub routine call
@@ -317,7 +332,7 @@ class CompilationEngine {
             subroutineCall(idf,tokenVal);
             return;
         }
-        writePut(idf);
+        writePush(idf);
     }
 
     // handles call from do and expressions
@@ -326,7 +341,7 @@ class CompilationEngine {
         if(tokenVal.equals(".")) {
             eat(".", JackToken.SYMBOL);
             try{
-                writePut(idf);
+                writePush(idf);
                 ++nArgs;
                 idf=JackCompilerUtils.getVMName(symbolTable.typeOf(idf),getTokenVal());
             }
@@ -371,7 +386,7 @@ class CompilationEngine {
     }
 
     // wrapper for push variable into stack
-    private void writePut(String varName) throws Exception{
+    private void writePush(String varName) throws Exception{
         Segment segment = JackCompilerUtils.getSegment(lookup((varName)));
         vmWriter.writePush(Objects.requireNonNull(segment),getIndex(varName));
     }
@@ -409,6 +424,14 @@ class CompilationEngine {
                     vmWriter.writeArithmetic(Command.NOT);
                 }
                 default -> vmWriter.writePush(Segment.CONST,0);
+            }
+        }else if(tokenType == JackToken.STRING_CONST){
+            String tokenVal = getTokenVal();
+            vmWriter.writePush(Segment.CONST, tokenVal.length());
+            vmWriter.writeCall("String.new",1);
+            for(int i=0; i < tokenVal.length(); ++i){
+                vmWriter.writePush(Segment.CONST, tokenVal.charAt(i));
+                vmWriter.writeCall("String.appendChar",2);
             }
         }
     }
