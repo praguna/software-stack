@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -13,6 +14,18 @@ class JackCompilerUtils {
     private static HashSet<String> operators = new HashSet<>(Arrays.asList(
         "+","-","*","/","&","|","<",">","~","="
     ));
+
+    private static Map<String, Command> operatorCommandMap= Map.ofEntries(
+      Map.entry("+",Command.ADD),
+      Map.entry("-",Command.SUB),
+      Map.entry("&",Command.AND),
+      Map.entry("<",Command.LT),
+      Map.entry(">",Command.GT),
+      Map.entry("~",Command.NOT),
+      Map.entry("=",Command.EQ),
+      Map.entry("u-",Command.NEG),
+      Map.entry("|",Command.OR)
+    );
 
     private static HashSet<String> statementPrefix = new HashSet<>(Arrays.asList(
        "do", "let", "while", "if", "return"
@@ -43,5 +56,9 @@ class JackCompilerUtils {
 
     static String getVMName(String className, String methodName){
         return className+"."+methodName;
+    }
+
+    static Command getCommand(String opr){
+        return operatorCommandMap.getOrDefault(opr,null);
     }
 }

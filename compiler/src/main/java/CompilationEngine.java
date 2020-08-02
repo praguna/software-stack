@@ -7,7 +7,6 @@ import java.util.Objects;
  */
 class CompilationEngine {
     private final JackTokenizer jackTokenizer;
-    private final PrintWriter writer;
     private final SymbolTable symbolTable;
     private final VMWriter vmWriter;
     private String currType;
@@ -16,7 +15,6 @@ class CompilationEngine {
     private String currSubroutineType;
     private String currClassName;
     CompilationEngine(FileInputStream inputStream, PrintWriter writer){
-        this.writer = writer;
         this.vmWriter = new VMWriter(writer);
         this.jackTokenizer = new JackTokenizer(inputStream);
         this.symbolTable = new SymbolTable();
@@ -169,10 +167,10 @@ class CompilationEngine {
             funcName = JackCompilerUtils.getVMName(currClassName,funcName);
         }
         eat("(", JackToken.SYMBOL);
-        compileExpressionList();
+        int nArgs = compileExpressionList();
         eat(")", JackToken.SYMBOL);
         eat(";", JackToken.SYMBOL);
-        vmWriter.writeCall(funcName,1);
+        vmWriter.writeCall(funcName,nArgs);
     }
 
     void compileLet() throws Exception {
@@ -229,23 +227,29 @@ class CompilationEngine {
         while(JackCompilerUtils.isOperator(tokenVal)){
             eat(tokenVal, JackToken.SYMBOL);
             compileTerm();
+            writeOperation(tokenVal);
             tokenVal =getTokenVal();
         }
     }
 
-    void compileExpressionList() throws Exception {
+    // returns number of expressions in expressions list for do statements
+    int compileExpressionList() throws Exception {
+        int nArgs = 0;
         String tokenVal = getTokenVal();
         // empty arguments
         if(tokenVal.equals(")")){
-            return;
+            return nArgs;
         }
         compileExpression();
+        ++nArgs;
         tokenVal = getTokenVal();
         while(tokenVal.equals(",")){
             eat(",", JackToken.SYMBOL);
             compileExpression();
             tokenVal = getTokenVal();
+            ++nArgs;
         }
+        return nArgs;
     }
 
     // usage of LL(2) parsing
@@ -253,8 +257,9 @@ class CompilationEngine {
         String tokenVal = getTokenVal();
         JackToken tokeType = getTokenType();
         if(tokeType.equals(JackToken.INT_CONST) || tokeType.equals(JackToken.STRING_CONST)  || tokeType.equals(JackToken.KEYWORD)) {
-           eat(tokenVal, tokeType);
-           return;
+            writeValues(tokeType);
+            eat(tokenVal, tokeType);
+            return;
         }
         else if(JackCompilerUtils.isUnary(tokenVal)){
             eat(tokenVal, JackToken.SYMBOL);
@@ -286,13 +291,31 @@ class CompilationEngine {
             eat(")", JackToken.SYMBOL);
         }
     }
-
     // complete syntax Analyzer process
     void compileSyntaxAnalyzer() throws Exception {
         // read the first token, expected as class
         advance();
         compileClass();
     }
+
+    // compile constants
+    void writeValues(JackToken token){
+        // have to develop this more
+        if (token == JackToken.INT_CONST) {
+            vmWriter.writePush(Segment.CONST, jackTokenizer.getIntVal());
+        }
+    }
+
+    // compile operators
+    private void writeOperation(String tokenVal) {
+        if(tokenVal.equals("*"))
+            vmWriter.writeCall("Math.multiply" , 2);
+        else if(tokenVal.equals("/"))
+            vmWriter.writeCall("Math.divide" , 2);
+        else
+            vmWriter.writeArithmetic(JackCompilerUtils.getCommand(tokenVal));
+    }
+
 
     private JackToken getTokenType() {
         return jackTokenizer.getTokenType();
