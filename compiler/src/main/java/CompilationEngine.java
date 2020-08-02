@@ -173,6 +173,7 @@ class CompilationEngine {
         eat(")", JackToken.SYMBOL);
         eat(";", JackToken.SYMBOL);
         vmWriter.writeCall(funcName,nArgs);
+        vmWriter.writePop(Segment.TEMP,0);
     }
 
     void compileLet() throws Exception {
@@ -192,30 +193,46 @@ class CompilationEngine {
     }
 
     void compileWhile() throws Exception {
+        int index = symbolTable.getWhileIndex();
+        vmWriter.writeLabel(String.format("while_start_%d",index));
         eat("while", JackToken.KEYWORD);
         eat("(", JackToken.SYMBOL);
         compileExpression();
         eat(")", JackToken.SYMBOL);
+        vmWriter.writeArithmetic(Command.NOT);
+        vmWriter.writeIf(String.format("while_end_%d",index));
         eat("{", JackToken.SYMBOL);
         compileStatements();
         eat("}", JackToken.SYMBOL);
+        vmWriter.writeGoto(String.format("while_start_%d",index));
+        vmWriter.writeLabel(String.format("while_end_%d",index));
     }
 
     void compileIf() throws Exception {
+        int index = symbolTable.getIfIndex();
+        vmWriter.writeLabel(String.format("if_stmt_%d",index));
         eat("if", JackToken.KEYWORD);
         eat("(", JackToken.SYMBOL);
         compileExpression();
         eat(")", JackToken.SYMBOL);
+        vmWriter.writeArithmetic(Command.NOT);
+        vmWriter.writeIf(String.format("if_end_%d",index));
         eat("{", JackToken.SYMBOL);
         compileStatements();
         eat("}", JackToken.SYMBOL);
         String tokenVal =  getTokenVal();
         if(tokenVal.equals("else")){
+            vmWriter.writeGoto(String.format("if_else_end_%d",index));
+            vmWriter.writeLabel(String.format("if_end_%d",index));
             eat("else", JackToken.KEYWORD);
             eat("{", JackToken.SYMBOL);
             compileStatements();
             eat("}", JackToken.SYMBOL);
+            vmWriter.writeLabel(String.format("if_else_end_%d",index));
+            return;
         }
+        vmWriter.writeLabel(String.format("if_end_%d",index));
+
     }
 
     void compileReturn() throws Exception {

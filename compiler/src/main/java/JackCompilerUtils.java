@@ -21,7 +21,7 @@ class JackCompilerUtils {
       Map.entry("&",Command.AND),
       Map.entry("<",Command.LT),
       Map.entry(">",Command.GT),
-      Map.entry("~",Command.NOT),
+      Map.entry("u~",Command.NOT),
       Map.entry("=",Command.EQ),
       Map.entry("u-",Command.NEG),
       Map.entry("|",Command.OR)

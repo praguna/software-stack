@@ -13,6 +13,8 @@ public class SymbolTable {
     private final HashMap<Kind, Integer> kindCount;
     private final HashMap<String, VarDetails> subroutineScope;
     private final boolean shouldPrint;
+    private int whileIndex;
+    private int ifIndex;
 
 
     SymbolTable(){
@@ -20,6 +22,8 @@ public class SymbolTable {
         subroutineScope = new HashMap<>();
         kindCount = new HashMap<>();
         shouldPrint = false;
+        whileIndex = 0;
+        ifIndex = 0;
     }
 
     void resetSubroutine(String name){
@@ -101,6 +105,17 @@ public class SymbolTable {
         System.out.println("------------------------------------");
     }
 
+    // update while count for unique while label
+    int getWhileIndex() {
+        ++whileIndex;
+        return whileIndex;
+    }
+
+    // updating if count for unique if label
+    int getIfIndex(){
+        ++ifIndex;
+        return ifIndex;
+    }
 
     // model class to store entry details for a variable
     private static class VarDetails {
