@@ -1,8 +1,3 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/12/Memory.jack
-
 /**
  * This library provides two services: direct access to the computer's main
  * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
@@ -10,25 +5,73 @@
  */ 
 class Memory {
 
+    static Array ram;
+    static Array heap;
+
     /** Initializes the class. */
     function void init() {
+        let ram = 0;
+        let heap = 2048;
+        let heap[0] = null;
+        let heap[1] = 14355; 
+        return;
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        return ram[address];
+    
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let ram[address] = value;
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var Array block, temp, prev;
+        var boolean flag;
+        let flag = false;
+        let temp = heap;
+        while(~(temp = null) & ~(flag)){
+           if(temp[1] > (size + 1)){ 
+                let flag = true;
+           }
+           else{ 
+                let prev = temp;
+                let temp = temp[0];
+           }
+        }
+        if((temp = null)){
+            // do Sys.error(-1);
+            return 0; //mess up stack
+        }
+        if(flag){
+            let block =  temp + temp[1] - size + 1; 
+            let temp[1] = temp[1] - size - 2;
+            if(temp[1] < 1){
+                let prev[0] = temp[0];
+            }
+            let temp = block - 1;
+            let temp[0] = size + 1; 
+        }
+        return block;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
+        var Array segment, temp;
+        let temp = heap;
+        let segment = o - 2;
+        let segment[0] = null;
+        while(~(temp[0] = null)){
+            let temp = temp[0];
+        }
+        let temp[0] = segment;
+        return;
     }    
 }
