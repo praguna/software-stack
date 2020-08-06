@@ -1,8 +1,3 @@
-// This file is part of www.nand2tetris.org
-// and the book "The Elements of Computing Systems"
-// by Nisan and Schocken, MIT Press.
-// File name: projects/12/Output.jack
-
 /**
  * A library of functions for writing text on the screen.
  * The Hack physical screen consists of 512 rows of 256 pixels each.
@@ -18,9 +13,18 @@ class Output {
 
     // Character map for displaying characters
     static Array charMaps; 
+    static int col, row, x, y;
+    static Array intArray;
 
     /** Initializes the screen, and locates the cursor at the screen's top-left. */
     function void init() {
+        do Output.initMap();
+        let intArray = Array.new(6);
+        let col = 0;
+        let row = 0;
+        let x = 0;
+        let y = 0;
+        return;
     }
 
     // Initializes the character map array
@@ -32,7 +36,7 @@ class Output {
         // Black square, used for displaying non-printable characters.
         do Output.create(0,63,63,63,63,63,63,63,63,63,0,0);
 
-        // Assigns the bitmap for each character in the charachter set.
+        // Assigns the bitmap for each character in the character set.
         // The first parameter is the character index, the next 11 numbers
         // are the values of each row in the frame that represents this character.
         do Output.create(32,0,0,0,0,0,0,0,0,0,0,0);          //
@@ -71,7 +75,7 @@ class Output {
         do Output.create(64,30,51,51,59,59,59,27,3,30,0,0);  // @
         do Output.create(63,30,51,51,24,12,12,0,12,12,0,0);  // ?
 
-        do Output.create(65,0,0,0,0,0,0,0,0,0,0,0);          // A ** TO BE FILLED **
+        do Output.create(65,12,30,51,51,63,51,51,51,51,0,0); // A
         do Output.create(66,31,51,51,51,31,51,51,51,31,0,0); // B
         do Output.create(67,28,54,35,3,3,3,35,54,28,0,0);    // C
         do Output.create(68,15,27,51,51,51,51,51,27,15,0,0); // D
@@ -176,28 +180,126 @@ class Output {
     /** Moves the cursor to the j-th column of the i-th row,
      *  and erases the character displayed there. */
     function void moveCursor(int i, int j) {
+        var int loc,v, k, a , b;
+        do Output.setAndUpdate(i,j);
+        let k = 0;
+        let b = 0;
+        let a = y*32 + (x/16);
+        while(k < 11){ 
+         let loc = a + b +  16384;  
+         if((col & 1) > 0){
+             let v = Memory.peek(loc) & 255;
+         }else{
+             let v = Memory.peek(loc) & -256;
+         }
+        do Memory.poke(loc, v);
+         let k = k + 1;
+         let b = b + 32;
+       }
+       return;
     }
 
     /** Displays the given character at the cursor location,
      *  and advances the cursor one column forward. */
     function void printChar(char c) {
+        var Array charVal;
+        var int i, loc, v, a, b;
+        let i = 0;
+        let charVal = Output.getMap(c);
+        let a = y * 32 + (x/16);
+        let b = 0;
+        while(i < 11){
+            let loc = a + 16384 + b;   
+            if((col & 1) > 0){
+              let v = Memory.peek(loc) |  (charVal[i] * 256);
+            }else{
+                 let v = Memory.peek(loc) |  charVal[i];   
+            }
+            do Memory.poke(loc, v); 
+            let i = i + 1;
+            let b = b + 32;
+        }
+        do Output.setAndUpdate(row,col+1);
+        return;
     }
 
     /** displays the given string starting at the cursor location,
      *  and advances the cursor appropriately. */
     function void printString(String s) {
+        var int i, l;
+        var char x;
+        let i = 2;
+        let l = s[1];
+        while(i < (l+2)){
+            let x = s[i];
+            do Output.printChar(x);
+            let i = i + 1;
+        }
+        return;
     }
 
     /** Displays the given integer starting at the cursor location,
      *  and advances the cursor appropriately. */
     function void printInt(int i) {
+        var int q, r ,j;      
+        if(i < 0){
+            do Output.printChar(45);
+        }
+        let i = Math.abs(i);
+        if(i = 0){
+            do Output.printChar(48);
+        }
+        let j = 2;
+        while(i>0){
+            let q = i/10;
+            let r = i - (q * 10);
+            let intArray[j] = r;
+            let i = q;
+            let j = j + 1;
+        }
+        let j = j - 1;
+        while(~(j < 2)){
+            do Output.printChar(intArray[j] + 48);
+            let j = j - 1;
+        }
+        return;
     }
 
     /** Advances the cursor to the beginning of the next line. */
     function void println() {
+        do Output.moveCursor(row+1,0);
+        return;
     }
 
     /** Moves the cursor one column back. */
     function void backSpace() {
+        do Output.moveCursor(row, col - 1);
+        return;
     }
+
+    /** Update row and column variables**/
+    function void setAndUpdate(int i,int j){
+        let row = i;
+        let col = j;
+        // warp around
+         if(col > 63){
+            let col = 0; // only column
+            if(row = 22){
+                let row = 0; // last row and column
+            }
+        }
+        if(row > 22){
+            let row = 0; // only row
+        }
+        if(col < 0){
+            let col = 63; // simple case
+        }
+        if(row < 0){
+            let row = 22; // simple case
+        }
+        let x = 8 * col;
+        let y = 11 * row;
+        return;
+    }
+
 }
