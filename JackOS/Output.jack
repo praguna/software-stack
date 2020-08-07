@@ -184,7 +184,7 @@ class Output {
         do Output.setAndUpdate(i,j);
         let k = 0;
         let b = 0;
-        let a = y*32 + (x/16);
+        let a = (y*32) + (x/16);
         while(k < 11){ 
          let loc = a + b +  16384;  
          if((col & 1) > 0){
@@ -206,7 +206,7 @@ class Output {
         var int i, loc, v, a, b;
         let i = 0;
         let charVal = Output.getMap(c);
-        let a = y * 32 + (x/16);
+        let a = (y * 32) + (x/16);
         let b = 0;
         while(i < 11){
             let loc = a + 16384 + b;   
@@ -228,10 +228,10 @@ class Output {
     function void printString(String s) {
         var int i, l;
         var char x;
-        let i = 2;
-        let l = s[1];
-        while(i < (l+2)){
-            let x = s[i];
+        let i = 0;
+        let l = s.length();
+        while(i < l){
+            let x = s.charAt(i);
             do Output.printChar(x);
             let i = i + 1;
         }

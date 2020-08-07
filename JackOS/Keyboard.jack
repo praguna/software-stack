@@ -52,8 +52,8 @@ class Keyboard {
                 let f = true;
             }else{
                 if(val = 129){
-                   if(s[1] > 0){ 
-                        let s[1] = s[1] - 1;
+                   if(s.length() > 0){ 
+                       do s.eraseLastChar();
                    }
                 }else{
                     do s.appendChar(val);
